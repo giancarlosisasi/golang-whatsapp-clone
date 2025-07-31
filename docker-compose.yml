@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:17
+    container_name: whatsappgiodb
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: gio
+      POSTGRES_PASSWORD: gio
+      POSTGRES_DB: whatsappgiodb
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped

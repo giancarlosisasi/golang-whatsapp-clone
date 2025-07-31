@@ -10,6 +10,24 @@ tasks:
     cmds:
       - air
     silent: true
-  gql:generate:
+  db:up:
+    cmds:
+      - docker compose up
+  db:down:
+    cmds:
+      - docker compose down
+  db:migrate:create:
+    cmds:
+      - migrate create -ext sql -dir database/migrations -seq {{.name}}
+  db:migrate:up:
+    cmds:
+      - migrate -path database/migrations -database postgres://gio:gio@localhost:5433/whatsappgiodb?sslmode=disable up 1
+  db:migrate:down:
+    cmds:
+      - migrate -path database/migrations -database postgres://gio:gio@localhost:5433/whatsappgiodb?sslmode=disable down 1
+  gql:
     cmds:
       - go generate ./...
+  sqlc:
+    cmds:
+      - go tool sqlc generate

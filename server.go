@@ -1,10 +1,13 @@
 package main
 
 import (
+	"golang-whatsapp-clone/config"
+	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph"
 	"log"
 	"net/http"
-	"os"
+
+	"golang-whatsapp-clone/database"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -14,15 +17,18 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-const defaultPort = "8080"
-
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
+	appConfig := config.SetupAppConfig()
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	dbpool := database.SetupDatabase(appConfig.DatabaseURL)
+	defer dbpool.Close()
+
+	dbQueries := db.New(dbpool)
+
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+		DBQueries: dbQueries,
+		AppConfig: appConfig,
+	}}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -38,6 +44,6 @@ func main() {
 	http.Handle("/", playground.ApolloSandboxHandler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", appConfig.Port)
+	log.Fatal(http.ListenAndServe(":"+appConfig.Port, nil))
 }
