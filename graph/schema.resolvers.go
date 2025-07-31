@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"golang-whatsapp-clone/graph/model"
+	"golang-whatsapp-clone/graphql"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -18,6 +19,29 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	panic(fmt.Errorf("not implemented: Todos - todos"))
+}
+
+// Me is the resolver for the me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	userCtx := graphql.GetUserFromContext(ctx)
+	if userCtx == nil {
+		return nil, nil
+	}
+
+	// fetch user from database
+	user, err := r.DBQueries.GetUserByEmail(ctx, userCtx.Email)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	return &model.User{
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		Name:      &user.Name.String,
+		AvatarURL: &user.AvatarUrl.String,
+		CreatedAt: user.CreatedAt.Time,
+		UpdatedAt: user.UpdatedAt.Time,
+	}, nil
 }
 
 // Mutation returns MutationResolver implementation.

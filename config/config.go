@@ -12,11 +12,13 @@ type AppConfig struct {
 	DatabaseURL        string
 	GoogleClientID     string
 	GoogleClientSecret string
+	GoogleUserInfoUrl  string
 	MobileAppSchema    string
 	BaseURL            string
 	AppEnv             string // development, qa, or production
 	JWTSecret          string
 	JWTRefreshSecret   string
+	CookieName         string
 }
 
 func SetupAppConfig() *AppConfig {
@@ -36,9 +38,10 @@ func SetupAppConfig() *AppConfig {
 	// google auth
 	googleClientId := viper.GetString("GOOGLE_CLIENT_ID")
 	googleClientSecret := viper.GetString("GOOGLE_CLIENT_SECRET")
+	googleUserInfo := viper.GetString("GOOGLE_USER_INFO_URL")
 
-	if googleClientId == "" || googleClientSecret == "" {
-		log.Fatal("env vars GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET are not set")
+	if googleClientId == "" || googleClientSecret == "" || googleClientId == "" {
+		log.Fatal("env vars GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET or GOOGLE_USER_INFO_URL are not set")
 	}
 
 	mobileAppSchema := viper.GetString("MOBILE_APP_SCHEME")
@@ -62,13 +65,20 @@ func SetupAppConfig() *AppConfig {
 		log.Fatal("env vars JWT_SECRET or JWT_REFRESH_SECRET are not set")
 	}
 
+	cookieName := viper.GetString("COOKIE_NAME")
+	if cookieName == "" {
+		log.Fatal("env vars COOKIE_NAME is not set")
+	}
+
 	return &AppConfig{
 		Port:               port,
 		DatabaseURL:        dbUrl,
 		GoogleClientID:     googleClientId,
 		GoogleClientSecret: googleClientSecret,
+		GoogleUserInfoUrl:  googleUserInfo,
 		MobileAppSchema:    mobileAppSchema,
 		BaseURL:            baseUrl,
 		AppEnv:             appEnv,
+		CookieName:         cookieName,
 	}
 }
