@@ -18,7 +18,8 @@ func NewAuthMiddleware(jwtService *JWTService, appConfig *config.AppConfig) *Aut
 	}
 }
 
-func (m *AuthMiddleware) RequireAuth() fiber.Handler {
+// This middleware will try to attach the user data to the context request in case an authentication header exists
+func (m *AuthMiddleware) AuthenticateUser() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var tokenString string
 
@@ -32,9 +33,10 @@ func (m *AuthMiddleware) RequireAuth() fiber.Handler {
 		}
 
 		if tokenString == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Missing authentication token",
-			})
+			// return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			// 	"error": "Missing authentication token",
+			// })
+			return c.Next()
 		}
 
 		// validate jwt

@@ -6,6 +6,7 @@ import (
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -57,14 +58,14 @@ func (h *AuthHandlers) GoogleCallback(c *fiber.Ctx) error {
 	clientType := c.Cookies(oauthClientTypeCookieName, "web")
 
 	if state == "" || state != storedState {
+		fmt.Printf("state: %s and storedState: %s\n", state, storedState)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid state parameter",
 		})
 	}
 
 	// clear state cookies
-	c.ClearCookie(oauthStateCookieName)
-	c.ClearCookie(oauthClientTypeCookieName)
+	h.clearStateCookies(c)
 
 	// exchange code for token
 	code := c.Query("code")
@@ -137,6 +138,7 @@ func (h *AuthHandlers) setStateCookies(c *fiber.Ctx, state string, clientType st
 			Secure:   isSecure,
 			SameSite: "Lax",
 			MaxAge:   300, // 5 minutes
+			Path:     "/",
 		},
 	)
 
@@ -147,6 +149,36 @@ func (h *AuthHandlers) setStateCookies(c *fiber.Ctx, state string, clientType st
 		Secure:   isSecure,
 		SameSite: "Lax",
 		MaxAge:   300,
+		Path:     "/",
+	})
+}
+
+func (h *AuthHandlers) clearStateCookies(c *fiber.Ctx) {
+	isSecure := h.appConfig.AppEnv == "production"
+
+	c.Cookie(
+		&fiber.Cookie{
+			// Name:     h.appConfig.CookieName,
+			Name:     oauthStateCookieName,
+			Value:    "",
+			HTTPOnly: true,
+			Secure:   isSecure,
+			SameSite: "Lax",
+			MaxAge:   -1, // 5 minutes
+			Path:     "/",
+			Expires:  time.Now().Add(-1 * time.Hour), // set expiry in the past
+		},
+	)
+
+	c.Cookie(&fiber.Cookie{
+		Name:     oauthClientTypeCookieName,
+		Value:    "",
+		HTTPOnly: true,
+		Secure:   isSecure,
+		SameSite: "Lax",
+		MaxAge:   -1,
+		Path:     "/",
+		Expires:  time.Now().Add(-1 * time.Hour),
 	})
 }
 

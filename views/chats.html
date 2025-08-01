@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chats</title>
+</head>
+<body>
+    <h1>Chats</h1>
+    <script>
+      console.log("Hello World");
+      // make a graphql request to get the current user
+      const meQuery = `
+        query Me {
+          me {
+            id
+            name
+            email
+            avatarUrl
+            createdAt
+            updatedAt
+          }
+        }
+      `
+      async function getMe() {
+        const response = await fetch("/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ query: meQuery }),
+        });
+        const data = await response.json();
+        console.log(data);
+      }
+
+      getMe();
+    </script>
+</body>
+</html>

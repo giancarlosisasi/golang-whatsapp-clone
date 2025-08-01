@@ -36,7 +36,7 @@ func main() {
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
 	authHandlers := auth.NewAuthHandlers(appConfig, oauthService, jwtService, dbQueries)
-	// authMW := auth.NewAuthMiddleware(jwtService, appConfig)
+	authMW := auth.NewAuthMiddleware(jwtService, appConfig)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -65,6 +65,10 @@ func main() {
 	auth.Get("/google", authHandlers.GoogleLogin)
 	auth.Get("/google/callback", authHandlers.GoogleCallback)
 	auth.Get("/logout", authHandlers.Logout)
+
+	app.Get("/chats", func(c *fiber.Ctx) error {
+		return c.SendFile("./views/chats.html")
+	})
 
 	if appConfig.AppEnv == "development" {
 		h := playground.ApolloSandboxHandler("GraphQL playground", "/graphql")
@@ -99,8 +103,7 @@ func main() {
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
-	// app.All("/graphql", authMW.RequireAuth(), graphqlHandler)
-	app.All("/graphql", graphqlHandler)
+	app.All("/graphql", authMW.AuthenticateUser(), graphqlHandler)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
