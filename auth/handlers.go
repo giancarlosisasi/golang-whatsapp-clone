@@ -35,7 +35,7 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 	log.Printf("Original URL: %s\n", c.OriginalURL())
 
 	// Get client type (web or mobile)
-	clientType := c.Query("client", "web")
+	clientType := c.Query("clientType", "web")
 	log.Printf("Client type: %s\n", clientType)
 
 	// generate auth url and state
