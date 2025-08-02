@@ -38,17 +38,36 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 	log.Printf("Original URL: %s\n", c.OriginalURL())
 
 	// Get client type (web or mobile)
-	clientType := c.Query("clientType", "web")
+	clientType := c.Query("client_type", "web")
 	log.Printf("Client type: %s --\n", clientType)
 
+	state := ""
 	// generate auth url and state
-	authURL, state, err := h.oauthService.GenerateAuthURL()
+	authURL, stateForWeb, err := h.oauthService.GenerateAuthURL()
 	if err != nil {
 		log.Printf("Failed to generate auth url: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate auth url",
 		})
 	}
+	// mobile will send us a state as a query param
+	stateForMobile := c.Query("state")
+
+	if clientType == "web" {
+		state = stateForWeb
+	} else if clientType == "mobile" {
+		state = stateForMobile
+	}
+
+	if state == "" {
+		log.Print("Failed to get the state value from url\n")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get the state value",
+		})
+
+	}
+
+	log.Printf("state value: %s", state)
 
 	log.Printf("AuthURL: %s\n", authURL)
 
