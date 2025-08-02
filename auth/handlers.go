@@ -43,7 +43,7 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 
 	state := ""
 	// generate auth url and state
-	authURL, stateForWeb, err := h.oauthService.GenerateAuthURL()
+	authURL, state, err := h.oauthService.GenerateAuthURL()
 	if err != nil {
 		log.Printf("Failed to generate auth url: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -51,21 +51,21 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 		})
 	}
 	// mobile will send us a state as a query param
-	stateForMobile := c.Query("state")
+	// stateForMobile := c.Query("state")
 
-	if clientType == "web" {
-		state = stateForWeb
-	} else if clientType == "mobile" {
-		state = stateForMobile
-	}
+	// if clientType == "web" {
+	// 	state = stateForWeb
+	// } else if clientType == "mobile" {
+	// 	state = stateForMobile
+	// }
 
-	if state == "" {
-		log.Print("Failed to get the state value from url\n")
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get the state value",
-		})
+	// if state == "" {
+	// 	log.Print("Failed to get the state value from url\n")
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"error": "Failed to get the state value",
+	// 	})
 
-	}
+	// }
 
 	log.Printf("state value: %s", state)
 
@@ -90,6 +90,7 @@ func (h *AuthHandlers) GoogleCallback(c *fiber.Ctx) error {
 
 	if state == "" || state != storedState {
 		log.Printf("state: %s and storedState: %s\n", state, storedState)
+		h.clearStateCookies(c)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid state parameter",
 		})
