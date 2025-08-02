@@ -1,17 +1,12 @@
-package main
+package server
 
 import (
-	"fmt"
 	"golang-whatsapp-clone/auth"
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph"
 	"golang-whatsapp-clone/graphql"
-	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"golang-whatsapp-clone/database"
 
@@ -23,10 +18,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-func main() {
+type Server struct {
+	App       *fiber.App
+	AppConfig *config.AppConfig
+	DBpool    *pgxpool.Pool
+}
+
+func NewServer() *Server {
 	appConfig := config.SetupAppConfig()
 
 	dbpool := database.SetupDatabase(appConfig.DatabaseURL)
@@ -111,23 +113,10 @@ func main() {
 		})
 	})
 
-	go func() {
+	return &Server{
+		App:       app,
+		AppConfig: appConfig,
+		DBpool:    dbpool,
+	}
 
-		if err := app.Listen(":" + appConfig.Port); err != nil {
-			log.Panic(err)
-		}
-	}()
-
-	c := make(chan os.Signal, 1)                    // Create channel to signify a signal being sent
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM) // When an interrupt or termination signal is sent, notify the channel
-
-	<-c // This blocks the main thread until an interrupt is received
-	fmt.Println("Gracefully shutting down...")
-	_ = app.Shutdown()
-
-	fmt.Println("Running cleanup tasks...")
-
-	// cleanup tasks
-	dbpool.Close()
-	fmt.Println("Fiber was successful shutdown.")
 }
