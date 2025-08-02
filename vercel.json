@@ -1,4 +1,5 @@
 {
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "rewrites": [
     { "source": "(.*)", "destination": "api/index.go" }
   ]
