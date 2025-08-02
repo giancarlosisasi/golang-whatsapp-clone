@@ -42,7 +42,7 @@ func SetupAppConfig() *AppConfig {
 	googleClientSecret := viper.GetString("GOOGLE_CLIENT_SECRET")
 	googleUserInfo := viper.GetString("GOOGLE_USER_INFO_URL")
 
-	if googleClientId == "" || googleClientSecret == "" || googleClientId == "" {
+	if googleClientId == "" || googleClientSecret == "" || googleUserInfo == "" {
 		log.Fatal("env vars GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET or GOOGLE_USER_INFO_URL are not set")
 	}
 
