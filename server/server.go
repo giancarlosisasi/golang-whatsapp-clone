@@ -1,12 +1,12 @@
 package server
 
 import (
-	"fmt"
 	"golang-whatsapp-clone/auth"
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph"
 	"golang-whatsapp-clone/graphql"
+	"log"
 	"net/http"
 
 	"golang-whatsapp-clone/database"
@@ -36,7 +36,7 @@ func NewServer() *Server {
 
 	dbQueries := db.New(dbpool)
 
-	fmt.Printf("app config: %+v", appConfig)
+	log.Printf("app config: %+v", appConfig)
 
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
