@@ -6,6 +6,7 @@ import (
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,8 +34,12 @@ var oauthClientTypeCookieName = "whatsappgio_oauth_client_type"
 
 func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 	log.Printf("Original URL: %s\n", c.OriginalURL())
-	// Get client type (web or mobile)
-	clientType := c.Query("client", "web")
+
+	clientType := "web"
+	redirectUri := c.Query("redirect_uri")
+	if strings.Contains(redirectUri, h.appConfig.MobileAppSchema) {
+		clientType = "mobile"
+	}
 
 	log.Printf("Client type: %s\n", clientType)
 
