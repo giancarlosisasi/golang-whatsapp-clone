@@ -1,16 +1,19 @@
 #!/bin/bash
-set -e  # Exit on any error
+set -e
 
-echo "🚀 Starting build process..."
+echo "🚀 Starting migration process..."
 
-# Install migrate CLI
+# Create local bin directory
+mkdir -p ./bin
+
+# Install migrate CLI locally
 echo "📦 Installing golang-migrate..."
 MIGRATE_VERSION="v4.18.3"
 curl -L "https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz" | tar xvz
 chmod +x migrate
-sudo mv migrate /usr/local/bin/migrate || mv migrate /usr/bin/migrate 2>/dev/null || export PATH="$PWD:$PATH"
+mv migrate ./bin/
+export PATH="$PWD/bin:$PATH"
 
-# Verify migrate installation
 echo "✅ Verifying migrate installation..."
 migrate -version
 
@@ -23,8 +26,4 @@ fi
 echo "🗄️  Running database migrations..."
 migrate -path database/migrations -database "$DATABASE_URL" up
 
-echo "🏗️  Building Go application..."
-# Vercel handles the Go build automatically, but you can add custom build steps here if needed
-# go build -o main .
-
-echo "✅ Build process completed successfully!"
+echo "✅ Migrations completed!"
