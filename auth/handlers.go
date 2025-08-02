@@ -217,7 +217,7 @@ func (h *AuthHandlers) clearStateCookies(c *fiber.Ctx) {
 func (h *AuthHandlers) handleAuthSuccess(c *fiber.Ctx, jwtToken string, clientType string) error {
 	if clientType == "mobile" {
 		// redirect to mobile app with token
-		redirectURL := fmt.Sprintf("%s://auth/%s/", h.appConfig.MobileAppSchema, jwtToken)
+		redirectURL := fmt.Sprintf("%sauth/%s/", h.appConfig.MobileAppSchema, jwtToken)
 		return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
 	}
 
