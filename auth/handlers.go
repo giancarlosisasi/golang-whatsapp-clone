@@ -35,6 +35,8 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 	// Get client type (web or mobile)
 	clientType := c.Query("client", "web")
 
+	fmt.Printf("Client type: %s\n", clientType)
+
 	// generate auth url and state
 	authURL, state, err := h.oauthService.GenerateAuthURL()
 	if err != nil {
@@ -43,6 +45,8 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 			"error": "Failed to generate auth url",
 		})
 	}
+
+	fmt.Printf("AuthURL: %s\n", authURL)
 
 	// store state and client type in cookies for validation
 	h.setStateCookies(c, state, clientType)
