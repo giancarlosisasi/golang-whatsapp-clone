@@ -32,6 +32,7 @@ var oauthStateCookieName = "whatsappgio_oauth_state"
 var oauthClientTypeCookieName = "whatsappgio_oauth_client_type"
 
 func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
+	log.Printf("Original URL: %s\n", c.OriginalURL())
 	// Get client type (web or mobile)
 	clientType := c.Query("client", "web")
 
