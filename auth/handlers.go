@@ -84,8 +84,10 @@ func (h *AuthHandlers) GoogleCallback(c *fiber.Ctx) error {
 	storedState := c.Cookies(oauthStateCookieName)
 	clientType := c.Cookies(oauthClientTypeCookieName, "web")
 
+	log.Printf("client type: %s and stored stated: %s and state: %s", clientType, storedState, state)
+
 	if state == "" || state != storedState {
-		fmt.Printf("state: %s and storedState: %s\n", state, storedState)
+		log.Printf("state: %s and storedState: %s\n", state, storedState)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid state parameter",
 		})
