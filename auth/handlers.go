@@ -79,6 +79,8 @@ func (h *AuthHandlers) GoogleLogin(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandlers) GoogleCallback(c *fiber.Ctx) error {
+	log.Printf("Original URL: %s\n", c.OriginalURL())
+
 	// verify state parameter
 	state := c.Query("state")
 	storedState := c.Cookies(oauthStateCookieName)
