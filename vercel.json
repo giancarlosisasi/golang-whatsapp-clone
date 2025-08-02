@@ -1,5 +1,4 @@
 {
-  "buildCommand": "chmod +x build.sh && ./build.sh && echo 'Migrations completed, Vercel will handle Go build'",
   "rewrites": [
     { "source": "(.*)", "destination": "api/index.go" }
   ]
