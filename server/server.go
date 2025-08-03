@@ -63,6 +63,13 @@ func NewServer() *Server {
 			AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 			AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 		}))
+	} else if appConfig.AppEnv == "production" {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins:     "https://studio.apollographql.com",
+			AllowCredentials: true,
+			AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+			AllowMethods:     "GET, POST, OPTIONS",
+		}))
 	}
 
 	// auth routes
