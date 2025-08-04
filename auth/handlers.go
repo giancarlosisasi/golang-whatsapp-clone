@@ -151,7 +151,8 @@ func (h *AuthHandlers) GoogleCallback(c *fiber.Ctx) error {
 }
 
 func (h *AuthHandlers) Logout(c *fiber.Ctx) error {
-	c.ClearCookie(h.appConfig.CookieName)
+	expiredAuthCookie := h.createAuthCookie("", -1, time.Now().Add(-1*time.Hour))
+	c.Cookie(expiredAuthCookie)
 
 	return c.JSON(fiber.Map{
 		"message": "logged out successfully",
@@ -233,4 +234,18 @@ func (h *AuthHandlers) handleAuthSuccess(c *fiber.Ctx, jwtToken string, clientTy
 	})
 
 	return c.Redirect("/chats", fiber.StatusTemporaryRedirect)
+}
+
+func (h *AuthHandlers) createAuthCookie(value string, maxAge int, expires time.Time) *fiber.Cookie {
+	isSecure := h.appConfig.AppEnv == "production"
+	return &fiber.Cookie{
+		Name:     h.appConfig.CookieName,
+		Value:    value,
+		HTTPOnly: true,
+		Secure:   isSecure,
+		SameSite: "Strict",
+		MaxAge:   maxAge,
+		Path:     "/",
+		Expires:  expires,
+	}
 }
