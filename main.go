@@ -12,13 +12,15 @@ import (
 
 func main() {
 
-	app, server := server.NewServer()
+	app, server, _ := server.NewServer()
 
 	go func() {
 
+		app.Logger.Info().Msgf("> The server is running in http://localhost:%s", app.AppConfig.Port)
 		if err := server.ListenAndServe(); err != nil {
 			log.Panic(err)
 		}
+
 	}()
 
 	c := make(chan os.Signal, 1)                    // Create channel to signify a signal being sent

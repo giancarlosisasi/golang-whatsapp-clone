@@ -24,7 +24,7 @@ type App struct {
 	Handler   *handler.Handler
 }
 
-func NewServer() (*App, *http.Server) {
+func NewServer() (*App, *http.Server, http.Handler) {
 	log := logger.NewLogger()
 	appConfig := config.SetupAppConfig()
 
@@ -192,8 +192,6 @@ func NewServer() (*App, *http.Server) {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Info().Msgf("> The server is running in http://localhost:%s", appConfig.Port)
-
-	return app, server
+	return app, server, rootHandler
 
 }
