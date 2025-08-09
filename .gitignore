@@ -2,3 +2,5 @@ tmp/
 .env
 postgres_data/
 .vercel
+
+TODOS.md
