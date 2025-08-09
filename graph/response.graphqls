@@ -1,0 +1,34 @@
+# standard response types
+interface Error {
+  code: String!
+  message: String!
+}
+
+interface Success {
+  success: Boolean!
+}
+
+type ValidationError implements Error {
+  message: String!
+  code: String!
+}
+
+type ServerError implements Error {
+  message: String!
+  code: String!
+}
+
+type NotFoundError implements Error {
+  message: String!
+  code: String!
+}
+
+type ForbiddenError implements Error {
+  message: String!
+  code: String!
+}
+
+type UnauthorizedError implements Error {
+  message: String!
+  code: String!
+}

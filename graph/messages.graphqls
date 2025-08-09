@@ -1,0 +1,148 @@
+
+enum ConversationTypeEnum {
+  DIRECT
+  GROUP
+}
+
+enum MessageTypeEnum {
+  TEXT
+  IMAGE
+  FILE
+}
+
+type Conversation {
+  id: ID!
+  type: ConversationTypeEnum
+  participants: [ConversationParticipant!]!
+  lastMessage: Message
+  lastMessageAt: DateTime
+  unreadCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ConversationParticipant {
+  id: ID!
+  user: User!
+  conversation: Conversation!
+  joinedAt: DateTime!
+  lastReadAt: DateTime
+  isActive: Boolean!
+}
+
+type Message {
+  id: ID!
+  conversation: Conversation!
+  sender: User!
+  content: String!
+  messageType: MessageTypeEnum!
+  createdAt: DateTime!
+  editedAt: DateTime
+  replyToMessage: Message
+}
+
+input ConversationMessageInput {
+  conversationId: ID!
+  pagination: Pagination
+}
+
+input GetOrCreateDirectConversationInput {
+  userId: ID!
+}
+
+type MyConversationsQuerySuccess implements Success {
+  success: Boolean!
+  conversations: [Conversation!]!
+}
+
+union MyConversationsQueryResult = MyConversationsQuerySuccess | ServerError | UnauthorizedError
+
+type ConversationMessagesQuerySuccess implements Success {
+  success: Boolean!
+  messages: [Message!]!
+}
+
+union ConversationMessagesQueryResult = ConversationMessagesQuerySuccess | ServerError | UnauthorizedError | NotFoundError
+
+type GetOrCreateDirectConversationSuccess implements Success {
+  success: Boolean!
+  conversation: Conversation!
+}
+
+union GetOrCreateDirectConversationResult = GetOrCreateDirectConversationSuccess | ServerError | UnauthorizedError | NotFoundError
+
+extend type Query {
+  myConversations: MyConversationsQueryResult!
+  conversationMessages(input: ConversationMessageInput!): ConversationMessagesQueryResult!
+  getOrCreateDirectConversation(input: GetOrCreateDirectConversationInput!): GetOrCreateDirectConversationResult!
+}
+
+
+input SendMessageInput {
+  conversationId: ID!
+  content: String!
+  messageType: MessageTypeEnum!
+  replyToMessageId: ID
+}
+
+input MarkConversationAsReadInput {
+  conversationId: ID!
+}
+
+input EditMessageInput {
+  messageId: ID!
+  content: String!
+}
+
+type SendMessageSuccess implements Success {
+  success: Boolean!
+  message: Message!
+}
+
+union SendMessageResult = SendMessageSuccess | ServerError | UnauthorizedError | NotFoundError
+
+type MarkConversationAsReadSuccess implements Success {
+  success: Boolean!
+  conversation: Conversation!
+}
+
+union MarkConversationAsReadResult = MarkConversationAsReadSuccess | ServerError | UnauthorizedError | NotFoundError
+
+type EditMessageSuccess implements Success {
+  success: Boolean!
+  message: Message!
+}
+
+union EditMessageResult = EditMessageSuccess | ServerError | UnauthorizedError | NotFoundError
+
+extend type Mutation {
+  sendMessage(input: SendMessageInput!): SendMessageResult!
+  markConversationAsRead(input: MarkConversationAsReadInput!): MarkConversationAsReadResult!
+  editMessage(input: EditMessageInput!): EditMessageResult!
+}
+
+input MessageAddedSubscriptionInput {
+  userId: ID!
+}
+
+input ConversationUpdatedSubscriptionInput {
+  userId: ID!
+}
+
+input UserTypingSubscriptionInput {
+  conversationId: ID!
+}
+
+type TypingEvent {
+  writingBy: ID!
+  writingAt: DateTime!
+}
+
+extend type Subscription {
+  # Listen for new messages in user's conversations
+  messageAdded(input: MessageAddedSubscriptionInput!): Message!
+  # Listen for conversation updated (last message, unread counts, etc)
+  conversationUpdated(input: ConversationUpdatedSubscriptionInput!): Conversation!
+  # Listen for typing indicators
+  userTyping(input: UserTypingSubscriptionInput!): TypingEvent!
+}

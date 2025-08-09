@@ -5,32 +5,15 @@
 scalar DateTime
 scalar Time
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
-
-type User {
-  id: ID!
-  name: String
-  email: String!
-  avatarUrl: String
-  createdAt: Time!
-  updatedAt: Time!
-}
 
 type Query {
-  todos: [Todo!]!
-  me: User
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
+  example: String
 }
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  example: String
+}
+
+type Subscription {
+  example: String
 }

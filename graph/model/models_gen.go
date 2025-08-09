@@ -3,26 +3,260 @@
 package model
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 )
+
+type ConversationMessagesQueryResult interface {
+	IsConversationMessagesQueryResult()
+}
+
+type EditMessageResult interface {
+	IsEditMessageResult()
+}
+
+type Error interface {
+	IsError()
+	GetCode() string
+	GetMessage() string
+}
+
+type GetOrCreateDirectConversationResult interface {
+	IsGetOrCreateDirectConversationResult()
+}
+
+type MarkConversationAsReadResult interface {
+	IsMarkConversationAsReadResult()
+}
+
+type MyConversationsQueryResult interface {
+	IsMyConversationsQueryResult()
+}
+
+type SendMessageResult interface {
+	IsSendMessageResult()
+}
+
+type Success interface {
+	IsSuccess()
+	GetSuccess() bool
+}
+
+type Conversation struct {
+	ID            string                     `json:"id"`
+	Type          *ConversationTypeEnum      `json:"type,omitempty"`
+	Participants  []*ConversationParticipant `json:"participants"`
+	LastMessage   *Message                   `json:"lastMessage,omitempty"`
+	LastMessageAt *string                    `json:"lastMessageAt,omitempty"`
+	UnreadCount   int32                      `json:"unreadCount"`
+	CreatedAt     string                     `json:"createdAt"`
+	UpdatedAt     string                     `json:"updatedAt"`
+}
+
+type ConversationMessageInput struct {
+	ConversationID string      `json:"conversationId"`
+	Pagination     *Pagination `json:"pagination,omitempty"`
+}
+
+type ConversationMessagesQuerySuccess struct {
+	Success  bool       `json:"success"`
+	Messages []*Message `json:"messages"`
+}
+
+func (ConversationMessagesQuerySuccess) IsSuccess()            {}
+func (this ConversationMessagesQuerySuccess) GetSuccess() bool { return this.Success }
+
+func (ConversationMessagesQuerySuccess) IsConversationMessagesQueryResult() {}
+
+type ConversationParticipant struct {
+	ID           string        `json:"id"`
+	User         *User         `json:"user"`
+	Conversation *Conversation `json:"conversation"`
+	JoinedAt     string        `json:"joinedAt"`
+	LastReadAt   *string       `json:"lastReadAt,omitempty"`
+	IsActive     bool          `json:"isActive"`
+}
+
+type ConversationUpdatedSubscriptionInput struct {
+	UserID string `json:"userId"`
+}
+
+type EditMessageInput struct {
+	MessageID string `json:"messageId"`
+	Content   string `json:"content"`
+}
+
+type EditMessageSuccess struct {
+	Success bool     `json:"success"`
+	Message *Message `json:"message"`
+}
+
+func (EditMessageSuccess) IsSuccess()            {}
+func (this EditMessageSuccess) GetSuccess() bool { return this.Success }
+
+func (EditMessageSuccess) IsEditMessageResult() {}
+
+type ForbiddenError struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
+}
+
+func (ForbiddenError) IsError()                {}
+func (this ForbiddenError) GetCode() string    { return this.Code }
+func (this ForbiddenError) GetMessage() string { return this.Message }
+
+type GetOrCreateDirectConversationInput struct {
+	UserID string `json:"userId"`
+}
+
+type GetOrCreateDirectConversationSuccess struct {
+	Success      bool          `json:"success"`
+	Conversation *Conversation `json:"conversation"`
+}
+
+func (GetOrCreateDirectConversationSuccess) IsSuccess()            {}
+func (this GetOrCreateDirectConversationSuccess) GetSuccess() bool { return this.Success }
+
+func (GetOrCreateDirectConversationSuccess) IsGetOrCreateDirectConversationResult() {}
+
+type MarkConversationAsReadInput struct {
+	ConversationID string `json:"conversationId"`
+}
+
+type MarkConversationAsReadSuccess struct {
+	Success      bool          `json:"success"`
+	Conversation *Conversation `json:"conversation"`
+}
+
+func (MarkConversationAsReadSuccess) IsSuccess()            {}
+func (this MarkConversationAsReadSuccess) GetSuccess() bool { return this.Success }
+
+func (MarkConversationAsReadSuccess) IsMarkConversationAsReadResult() {}
+
+type Message struct {
+	ID             string          `json:"id"`
+	Conversation   *Conversation   `json:"conversation"`
+	Sender         *User           `json:"sender"`
+	Content        string          `json:"content"`
+	MessageType    MessageTypeEnum `json:"messageType"`
+	CreatedAt      string          `json:"createdAt"`
+	EditedAt       *string         `json:"editedAt,omitempty"`
+	ReplyToMessage *Message        `json:"replyToMessage,omitempty"`
+}
+
+type MessageAddedSubscriptionInput struct {
+	UserID string `json:"userId"`
+}
 
 type Mutation struct {
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type MyConversationsQuerySuccess struct {
+	Success       bool            `json:"success"`
+	Conversations []*Conversation `json:"conversations"`
+}
+
+func (MyConversationsQuerySuccess) IsSuccess()            {}
+func (this MyConversationsQuerySuccess) GetSuccess() bool { return this.Success }
+
+func (MyConversationsQuerySuccess) IsMyConversationsQueryResult() {}
+
+type NotFoundError struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
+}
+
+func (NotFoundError) IsConversationMessagesQueryResult() {}
+
+func (NotFoundError) IsGetOrCreateDirectConversationResult() {}
+
+func (NotFoundError) IsSendMessageResult() {}
+
+func (NotFoundError) IsMarkConversationAsReadResult() {}
+
+func (NotFoundError) IsEditMessageResult() {}
+
+func (NotFoundError) IsError()                {}
+func (this NotFoundError) GetCode() string    { return this.Code }
+func (this NotFoundError) GetMessage() string { return this.Message }
+
+type Pagination struct {
+	Offset int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type SendMessageInput struct {
+	ConversationID   string          `json:"conversationId"`
+	Content          string          `json:"content"`
+	MessageType      MessageTypeEnum `json:"messageType"`
+	ReplyToMessageID *string         `json:"replyToMessageId,omitempty"`
 }
+
+type SendMessageSuccess struct {
+	Success bool     `json:"success"`
+	Message *Message `json:"message"`
+}
+
+func (SendMessageSuccess) IsSuccess()            {}
+func (this SendMessageSuccess) GetSuccess() bool { return this.Success }
+
+func (SendMessageSuccess) IsSendMessageResult() {}
+
+type ServerError struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
+}
+
+func (ServerError) IsMyConversationsQueryResult() {}
+
+func (ServerError) IsConversationMessagesQueryResult() {}
+
+func (ServerError) IsGetOrCreateDirectConversationResult() {}
+
+func (ServerError) IsSendMessageResult() {}
+
+func (ServerError) IsMarkConversationAsReadResult() {}
+
+func (ServerError) IsEditMessageResult() {}
+
+func (ServerError) IsError()                {}
+func (this ServerError) GetCode() string    { return this.Code }
+func (this ServerError) GetMessage() string { return this.Message }
+
+type Subscription struct {
+}
+
+type TypingEvent struct {
+	WritingBy string `json:"writingBy"`
+	WritingAt string `json:"writingAt"`
+}
+
+type UnauthorizedError struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
+}
+
+func (UnauthorizedError) IsMyConversationsQueryResult() {}
+
+func (UnauthorizedError) IsConversationMessagesQueryResult() {}
+
+func (UnauthorizedError) IsGetOrCreateDirectConversationResult() {}
+
+func (UnauthorizedError) IsSendMessageResult() {}
+
+func (UnauthorizedError) IsMarkConversationAsReadResult() {}
+
+func (UnauthorizedError) IsEditMessageResult() {}
+
+func (UnauthorizedError) IsError()                {}
+func (this UnauthorizedError) GetCode() string    { return this.Code }
+func (this UnauthorizedError) GetMessage() string { return this.Message }
 
 type User struct {
 	ID        string    `json:"id"`
@@ -31,4 +265,129 @@ type User struct {
 	AvatarURL *string   `json:"avatarUrl,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type UserTypingSubscriptionInput struct {
+	ConversationID string `json:"conversationId"`
+}
+
+type ValidationError struct {
+	Message string `json:"message"`
+	Code    string `json:"code"`
+}
+
+func (ValidationError) IsError()                {}
+func (this ValidationError) GetCode() string    { return this.Code }
+func (this ValidationError) GetMessage() string { return this.Message }
+
+type ConversationTypeEnum string
+
+const (
+	ConversationTypeEnumDirect ConversationTypeEnum = "DIRECT"
+	ConversationTypeEnumGroup  ConversationTypeEnum = "GROUP"
+)
+
+var AllConversationTypeEnum = []ConversationTypeEnum{
+	ConversationTypeEnumDirect,
+	ConversationTypeEnumGroup,
+}
+
+func (e ConversationTypeEnum) IsValid() bool {
+	switch e {
+	case ConversationTypeEnumDirect, ConversationTypeEnumGroup:
+		return true
+	}
+	return false
+}
+
+func (e ConversationTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *ConversationTypeEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ConversationTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ConversationTypeEnum", str)
+	}
+	return nil
+}
+
+func (e ConversationTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ConversationTypeEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ConversationTypeEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type MessageTypeEnum string
+
+const (
+	MessageTypeEnumText  MessageTypeEnum = "TEXT"
+	MessageTypeEnumImage MessageTypeEnum = "IMAGE"
+	MessageTypeEnumFile  MessageTypeEnum = "FILE"
+)
+
+var AllMessageTypeEnum = []MessageTypeEnum{
+	MessageTypeEnumText,
+	MessageTypeEnumImage,
+	MessageTypeEnumFile,
+}
+
+func (e MessageTypeEnum) IsValid() bool {
+	switch e {
+	case MessageTypeEnumText, MessageTypeEnumImage, MessageTypeEnumFile:
+		return true
+	}
+	return false
+}
+
+func (e MessageTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *MessageTypeEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MessageTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MessageTypeEnum", str)
+	}
+	return nil
+}
+
+func (e MessageTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *MessageTypeEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e MessageTypeEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

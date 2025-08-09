@@ -7,41 +7,21 @@ package graph
 import (
 	"context"
 	"fmt"
-	"golang-whatsapp-clone/graph/model"
-	"golang-whatsapp-clone/graphql"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// Example is the resolver for the example field.
+func (r *mutationResolver) Example(ctx context.Context) (*string, error) {
+	panic(fmt.Errorf("not implemented: Example - example"))
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// Example is the resolver for the example field.
+func (r *queryResolver) Example(ctx context.Context) (*string, error) {
+	panic(fmt.Errorf("not implemented: Example - example"))
 }
 
-// Me is the resolver for the me field.
-func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	userCtx := graphql.GetUserFromContext(ctx)
-	if userCtx == nil {
-		return nil, nil
-	}
-
-	// fetch user from database
-	user, err := r.DBQueries.GetUserByEmail(ctx, userCtx.Email)
-	if err != nil {
-		return nil, fmt.Errorf("user not found: %w", err)
-	}
-
-	return &model.User{
-		ID:        user.ID.String(),
-		Email:     user.Email,
-		Name:      &user.Name.String,
-		AvatarURL: &user.AvatarUrl.String,
-		CreatedAt: user.CreatedAt.Time,
-		UpdatedAt: user.UpdatedAt.Time,
-	}, nil
+// Example is the resolver for the example field.
+func (r *subscriptionResolver) Example(ctx context.Context) (<-chan *string, error) {
+	panic(fmt.Errorf("not implemented: Example - example"))
 }
 
 // Mutation returns MutationResolver implementation.
@@ -50,5 +30,9 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Subscription returns SubscriptionResolver implementation.
+func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }
