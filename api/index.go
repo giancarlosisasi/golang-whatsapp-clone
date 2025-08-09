@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"net/http"
-
+	"errors"
 	"golang-whatsapp-clone/server"
-
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"net/http"
 )
 
 // Handler is the main entry point of the application. Think of it like the main() method
@@ -13,10 +11,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// This is needed to set the proper request path in `*fiber.Ctx`
 	r.RequestURI = r.URL.String()
 
-	server := server.NewServer()
-	defer server.DBpool.Close()
+	app, server := server.NewServer()
+	defer app.DBpool.Close()
 
-	h := adaptor.FiberApp(server.App)
-	h.ServeHTTP(w, r)
+	err := server.ListenAndServe()
+	if err != nil {
+		msg := "error to run the application in vercel api/index.go file"
+		app.Logger.Error().Msgf("%s: %s", msg, err)
 
+		app.Handler.ServerErrorResponse(w, r, errors.New(msg))
+	}
 }

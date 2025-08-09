@@ -45,6 +45,11 @@ type Success interface {
 	GetSuccess() bool
 }
 
+type AppTime struct {
+	UnixTime  int32  `json:"unixTime"`
+	TimeStamp string `json:"timeStamp"`
+}
+
 type Conversation struct {
 	ID            string                     `json:"id"`
 	Type          *ConversationTypeEnum      `json:"type,omitempty"`

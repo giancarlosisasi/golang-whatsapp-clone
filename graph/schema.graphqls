@@ -5,6 +5,10 @@
 scalar DateTime
 scalar Time
 
+type AppTime {
+  unixTime: Int!
+  timeStamp: String!
+}
 
 type Query {
   example: String
@@ -16,4 +20,5 @@ type Mutation {
 
 type Subscription {
   example: String
+  currentTime: AppTime!
 }

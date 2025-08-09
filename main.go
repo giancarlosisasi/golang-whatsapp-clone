@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"golang-whatsapp-clone/server"
 	"log"
@@ -11,11 +12,11 @@ import (
 
 func main() {
 
-	server := server.NewServer()
+	app, server := server.NewServer()
 
 	go func() {
 
-		if err := server.App.Listen(":" + server.AppConfig.Port); err != nil {
+		if err := server.ListenAndServe(); err != nil {
 			log.Panic(err)
 		}
 	}()
@@ -25,11 +26,11 @@ func main() {
 
 	<-c // This blocks the main thread until an interrupt is received
 	fmt.Println("Gracefully shutting down...")
-	_ = server.App.Shutdown()
+	_ = server.Shutdown(context.Background())
 
 	fmt.Println("Running cleanup tasks...")
 
 	// cleanup tasks
-	server.DBpool.Close()
-	fmt.Println("Fiber was successful shutdown.")
+	app.DBpool.Close()
+	fmt.Println("Server was successful shutdown.")
 }

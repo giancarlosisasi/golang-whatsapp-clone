@@ -7,6 +7,8 @@ package graph
 import (
 	"context"
 	"fmt"
+	"golang-whatsapp-clone/graph/model"
+	"time"
 )
 
 // Example is the resolver for the example field.
@@ -22,6 +24,37 @@ func (r *queryResolver) Example(ctx context.Context) (*string, error) {
 // Example is the resolver for the example field.
 func (r *subscriptionResolver) Example(ctx context.Context) (<-chan *string, error) {
 	panic(fmt.Errorf("not implemented: Example - example"))
+}
+
+// CurrentTime is the resolver for the currentTime field.
+func (r *subscriptionResolver) CurrentTime(ctx context.Context) (<-chan *model.AppTime, error) {
+	ch := make(chan *model.AppTime)
+
+	go func() {
+		defer close(ch)
+
+		for {
+			time.Sleep(1 * time.Second)
+			fmt.Println("Tick")
+
+			currentTime := time.Now()
+			t := &model.AppTime{
+				UnixTime:  int32(currentTime.Unix()),
+				TimeStamp: currentTime.Format(time.RFC3339),
+			}
+
+			select {
+			case <-ctx.Done(): // this runs when context get cancelled. Subscription closes
+				fmt.Println("Subscription cancelled")
+				// Handle deregistration of the channel here. `close(ch)`
+				return // remember to return to end the routine
+			case ch <- t: // this is the actual send.
+				// our message went thought, do nothing
+			}
+		}
+	}()
+
+	return ch, nil
 }
 
 // Mutation returns MutationResolver implementation.

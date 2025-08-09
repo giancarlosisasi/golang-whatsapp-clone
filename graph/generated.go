@@ -50,6 +50,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AppTime struct {
+		TimeStamp func(childComplexity int) int
+		UnixTime  func(childComplexity int) int
+	}
+
 	Conversation struct {
 		CreatedAt     func(childComplexity int) int
 		ID            func(childComplexity int) int
@@ -143,6 +148,7 @@ type ComplexityRoot struct {
 
 	Subscription struct {
 		ConversationUpdated func(childComplexity int, input model.ConversationUpdatedSubscriptionInput) int
+		CurrentTime         func(childComplexity int) int
 		Example             func(childComplexity int) int
 		MessageAdded        func(childComplexity int, input model.MessageAddedSubscriptionInput) int
 		UserTyping          func(childComplexity int, input model.UserTypingSubscriptionInput) int
@@ -188,6 +194,7 @@ type QueryResolver interface {
 }
 type SubscriptionResolver interface {
 	Example(ctx context.Context) (<-chan *string, error)
+	CurrentTime(ctx context.Context) (<-chan *model.AppTime, error)
 	MessageAdded(ctx context.Context, input model.MessageAddedSubscriptionInput) (<-chan *model.Message, error)
 	ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan *model.Conversation, error)
 	UserTyping(ctx context.Context, input model.UserTypingSubscriptionInput) (<-chan *model.TypingEvent, error)
@@ -211,6 +218,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AppTime.timeStamp":
+		if e.complexity.AppTime.TimeStamp == nil {
+			break
+		}
+
+		return e.complexity.AppTime.TimeStamp(childComplexity), true
+
+	case "AppTime.unixTime":
+		if e.complexity.AppTime.UnixTime == nil {
+			break
+		}
+
+		return e.complexity.AppTime.UnixTime(childComplexity), true
 
 	case "Conversation.createdAt":
 		if e.complexity.Conversation.CreatedAt == nil {
@@ -591,6 +612,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Subscription.ConversationUpdated(childComplexity, args["input"].(model.ConversationUpdatedSubscriptionInput)), true
+
+	case "Subscription.currentTime":
+		if e.complexity.Subscription.CurrentTime == nil {
+			break
+		}
+
+		return e.complexity.Subscription.CurrentTime(childComplexity), true
 
 	case "Subscription.example":
 		if e.complexity.Subscription.Example == nil {
@@ -1011,6 +1039,94 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AppTime_unixTime(ctx context.Context, field graphql.CollectedField, obj *model.AppTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AppTime_unixTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UnixTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AppTime_unixTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AppTime",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AppTime_timeStamp(ctx context.Context, field graphql.CollectedField, obj *model.AppTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AppTime_timeStamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TimeStamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AppTime_timeStamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AppTime",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Conversation_id(ctx context.Context, field graphql.CollectedField, obj *model.Conversation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Conversation_id(ctx, field)
@@ -3613,6 +3729,70 @@ func (ec *executionContext) fieldContext_Subscription_example(_ context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_currentTime(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_currentTime(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().CurrentTime(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.AppTime):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalNAppTime2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐAppTime(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_currentTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "unixTime":
+				return ec.fieldContext_AppTime_unixTime(ctx, field)
+			case "timeStamp":
+				return ec.fieldContext_AppTime_timeStamp(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AppTime", field.Name)
 		},
 	}
 	return fc, nil
@@ -6943,6 +7123,50 @@ func (ec *executionContext) _Success(ctx context.Context, sel ast.SelectionSet, 
 
 // region    **************************** object.gotpl ****************************
 
+var appTimeImplementors = []string{"AppTime"}
+
+func (ec *executionContext) _AppTime(ctx context.Context, sel ast.SelectionSet, obj *model.AppTime) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, appTimeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AppTime")
+		case "unixTime":
+			out.Values[i] = ec._AppTime_unixTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "timeStamp":
+			out.Values[i] = ec._AppTime_timeStamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var conversationImplementors = []string{"Conversation"}
 
 func (ec *executionContext) _Conversation(ctx context.Context, sel ast.SelectionSet, obj *model.Conversation) graphql.Marshaler {
@@ -7769,6 +7993,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	switch fields[0].Name {
 	case "example":
 		return ec._Subscription_example(ctx, fields[0])
+	case "currentTime":
+		return ec._Subscription_currentTime(ctx, fields[0])
 	case "messageAdded":
 		return ec._Subscription_messageAdded(ctx, fields[0])
 	case "conversationUpdated":
@@ -8304,6 +8530,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAppTime2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐAppTime(ctx context.Context, sel ast.SelectionSet, v model.AppTime) graphql.Marshaler {
+	return ec._AppTime(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAppTime2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐAppTime(ctx context.Context, sel ast.SelectionSet, v *model.AppTime) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AppTime(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
