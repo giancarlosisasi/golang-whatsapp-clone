@@ -176,7 +176,7 @@ func NewServer() (*App, *http.Server, http.Handler) {
 	mux.HandleFunc("/api/v1/auth/logout", handler.LogoutHandler)
 	mux.HandleFunc("/chats", func(w http.ResponseWriter, r *http.Request) {
 		user := auth.GetUserFromContext(r.Context())
-		log.Debug().Msgf("user is: %+v", user)
+		log.Info().Msgf("user is: %+v", user)
 		io.WriteString(w, "Chats page")
 	})
 	mux.HandleFunc("/graphql", handler.GraphqlHandler)
