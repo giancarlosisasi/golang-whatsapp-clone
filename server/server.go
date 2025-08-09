@@ -5,8 +5,6 @@ import (
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph"
-	"golang-whatsapp-clone/graphql"
-	"log"
 	"net/http"
 
 	"golang-whatsapp-clone/database"
@@ -36,8 +34,6 @@ func NewServer() *Server {
 
 	dbQueries := db.New(dbpool)
 
-	log.Printf("app config: %+v", appConfig)
-
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
 	authHandlers := auth.NewAuthHandlers(appConfig, oauthService, jwtService, dbQueries)
@@ -56,14 +52,15 @@ func NewServer() *Server {
 		},
 	})
 
-	if appConfig.AppEnv == "development" {
+	switch appConfig.AppEnv {
+	case "development":
 		app.Use(cors.New(cors.Config{
 			AllowOrigins:     "http://localhost:3000,http://localhost:4000",
 			AllowCredentials: true,
 			AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 			AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 		}))
-	} else if appConfig.AppEnv == "production" {
+	case "production":
 		app.Use(cors.New(cors.Config{
 			AllowOrigins:     "https://studio.apollographql.com",
 			AllowCredentials: true,
@@ -72,11 +69,11 @@ func NewServer() *Server {
 		}))
 	}
 
-	// auth routes
-	auth := app.Group("/api/v1/auth")
-	auth.Get("/google", authHandlers.GoogleLogin)
-	auth.Get("/google/callback", authHandlers.GoogleCallback)
-	auth.Get("/logout", authHandlers.Logout)
+	// authApiGroup routes
+	authApiGroup := app.Group("/api/v1/auth")
+	authApiGroup.Get("/google", authHandlers.GoogleLogin)
+	authApiGroup.Get("/google/callback", authHandlers.GoogleCallback)
+	authApiGroup.Get("/logout", authHandlers.Logout)
 
 	app.Get("/chats", func(c *fiber.Ctx) error {
 		return c.SendFile("./views/chats.html")
@@ -99,7 +96,7 @@ func NewServer() *Server {
 		// create graphql context with user info
 		ctx := r.Context()
 		if userID != "" && userEmail != "" {
-			ctx = graphql.WithUserContext(ctx, userID, userEmail)
+			ctx = auth.WithUserContext(ctx, userID, userEmail)
 			r = r.WithContext(ctx)
 		}
 
