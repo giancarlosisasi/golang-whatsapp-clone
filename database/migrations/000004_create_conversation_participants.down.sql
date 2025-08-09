@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS conversation_participants;
+
+DROP INDEX IF EXISTS idx_conversation_participants_conversation_id;
+DROP INDEX IF EXISTS idx_conversation_participants_user_id;
+DROP INDEX IF EXISTS idx_conversation_participants_user_active;
+DROP INDEX IF EXISTS idx_conversation_participants_last_read;

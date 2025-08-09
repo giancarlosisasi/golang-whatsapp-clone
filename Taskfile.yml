@@ -25,6 +25,9 @@ tasks:
   db:migrate:down:
     cmds:
       - migrate -path database/migrations -database postgres://gio:gio@localhost:5433/whatsappgiodb?sslmode=disable down 1
+  db:migrate:force:
+    cmds:
+      - migrate -path database/migrations -database postgres://gio:gio@localhost:5433/whatsappgiodb?sslmode=disable force {{.version}}
   gql:
     cmds:
       - go generate ./...
