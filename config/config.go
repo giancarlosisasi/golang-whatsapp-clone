@@ -25,6 +25,7 @@ type AppConfig struct {
 func SetupAppConfig() *AppConfig {
 	err := godotenv.Load()
 	if err != nil {
+		// TODO: only log this when we are not in production
 		fmt.Printf("warning: error to load env: %s", err.Error())
 	}
 
