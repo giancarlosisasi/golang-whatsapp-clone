@@ -8,6 +8,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Conversation struct {
+	ID            pgtype.UUID
+	Type          string
+	Name          pgtype.Text
+	Description   pgtype.Text
+	AvatarUrl     pgtype.Text
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	LastMessageAt pgtype.Timestamptz
+}
+
+type ConversationParticipant struct {
+	ID             pgtype.UUID
+	ConversationID pgtype.UUID
+	UserID         pgtype.UUID
+	JoinedAt       pgtype.Timestamptz
+	LastReadAt     pgtype.Timestamptz
+	IsActive       pgtype.Bool
+	Role           string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type Message struct {
+	ID                pgtype.UUID
+	ConversationID    pgtype.UUID
+	SenderID          pgtype.UUID
+	Content           string
+	MessageType       string
+	ReplyToMessageID  pgtype.UUID
+	MediaUrl          pgtype.Text
+	MediaFilename     pgtype.Text
+	MediaSize         pgtype.Int8
+	MediaMimeType     pgtype.Text
+	LocationLatitude  pgtype.Numeric
+	LocationLongitude pgtype.Numeric
+	LocationAddress   pgtype.Text
+	IsDeleted         pgtype.Bool
+	CreatedAt         pgtype.Timestamptz
+	EditedAt          pgtype.Timestamptz
+	DeletedAt         pgtype.Timestamptz
+}
+
 type User struct {
 	ID        pgtype.UUID
 	Name      pgtype.Text
