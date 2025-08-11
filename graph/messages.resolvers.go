@@ -6,7 +6,9 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	customerrors "golang-whatsapp-clone/errors"
 	"golang-whatsapp-clone/graph/model"
 )
 
@@ -27,16 +29,28 @@ func (r *mutationResolver) EditMessage(ctx context.Context, input model.EditMess
 
 // MyConversations is the resolver for the myConversations field.
 func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversationsQueryResult, error) {
-	_, graphqlError := r.mustGetAuthenticatedUser(ctx)
+	user, graphqlError := r.mustGetAuthenticatedUser(ctx)
 
 	if graphqlError != nil {
 		return graphqlError, nil
 	}
 
-	return &model.MyConversationsQuerySuccess{
-		Success:       true,
-		Conversations: make([]*model.Conversation, 0),
-	}, nil
+	myConversations, err := r.ConversationService.GetUserConversations(ctx, user.UserID)
+	if err != nil {
+		if errors.Is(err, customerrors.ErrInvalidUUIDValue) {
+			return model.ServerError{
+				Message: "invalid user id",
+				Code:    customerrors.CodeInternalError,
+			}, nil
+		}
+	}
+
+	r.Logger.Debug().Msgf("my conversations result: %+v", myConversations)
+
+	var conversations model.MyConversationsQueryResult
+
+	return conversations, nil
+
 }
 
 // ConversationMessages is the resolver for the conversationMessages field.

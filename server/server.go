@@ -6,8 +6,11 @@ import (
 	"golang-whatsapp-clone/auth"
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
+	"golang-whatsapp-clone/graph"
 	"golang-whatsapp-clone/handler"
 	"golang-whatsapp-clone/logger"
+	"golang-whatsapp-clone/repository"
+	"golang-whatsapp-clone/service"
 	"io"
 	"net/http"
 	"time"
@@ -33,37 +36,60 @@ func NewServer() (*App, *http.Server, http.Handler) {
 
 	dbQueries := db.New(dbpool)
 
+	// repositories
+	conversationRepository := repository.NewConversationRepository(dbQueries)
+
+	// services
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
+	conversationService := service.NewConversationService(conversationRepository)
 
-	handler := handler.NewHandler(log, appConfig, dbQueries, oauthService, jwtService)
+	handlers := handler.NewHandler(
+		log,
+		appConfig,
+		dbQueries,
+		oauthService,
+		jwtService,
+	)
 
 	app := &App{
 		AppConfig: appConfig,
 		DBpool:    dbpool,
 		Logger:    log,
-		Handler:   handler,
+		Handler:   handlers,
 	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/health", handler.HealthCheckHandler)
-	mux.HandleFunc("/api/v1/health", handler.HealthCheckHandler)
-	mux.HandleFunc("/api/v1/auth/google", handler.GoogleLoginHandler)
-	mux.HandleFunc("/api/v1/auth/google/callback", handler.GoogleCallbackHandler)
-	mux.HandleFunc("/api/v1/auth/logout", handler.LogoutHandler)
+	mux.HandleFunc("/health", handlers.HealthCheckHandler)
+	mux.HandleFunc("/api/v1/health", handlers.HealthCheckHandler)
+	mux.HandleFunc("/api/v1/auth/google", handlers.GoogleLoginHandler)
+	mux.HandleFunc("/api/v1/auth/google/callback", handlers.GoogleCallbackHandler)
+	mux.HandleFunc("/api/v1/auth/logout", handlers.LogoutHandler)
 	mux.HandleFunc("/chats", func(w http.ResponseWriter, r *http.Request) {
 		user := auth.GetUserFromContext(r.Context())
 		log.Info().Msgf("user is: %+v", user)
 		_, err := io.WriteString(w, "Chats page")
 		if err != nil {
-			handler.ServerErrorResponse(w, r, errors.New("internal server error"))
+			handlers.ServerErrorResponse(w, r, errors.New("internal server error"))
 		}
 	})
-	mux.HandleFunc("/graphql", handler.GraphqlHandler)
-	mux.HandleFunc("/playground", handler.GraphqlPlaygroundHandler)
 
-	rootHandler := handler.AuthenticateUserMiddleware(mux)
+	// ------------------------- GQLGen setup handlers ---------------------- //
+	gqlResolver := &graph.Resolver{
+		DBQueries:           dbQueries,
+		AppConfig:           appConfig,
+		ConversationService: conversationService,
+		Logger:              log,
+	}
+	graphqlHandler := handler.NewGraphqlHandler(log, gqlResolver)
+	graphqlPlaygroundHandler := handler.NewGraphqlPlaygroundHandler()
+
+	mux.HandleFunc("/graphql", graphqlHandler.ServeHTTP)
+	mux.HandleFunc("/playground", graphqlPlaygroundHandler.ServeHTTP)
+
+	// ----------------------- Middlewares ----------------------- //
+	rootHandler := handlers.AuthenticateUserMiddleware(mux)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", appConfig.Port),

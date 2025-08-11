@@ -11,14 +11,12 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/websocket"
+	"github.com/rs/zerolog"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-func (h *Handler) GraphqlHandler(w http.ResponseWriter, r *http.Request) {
-	srv := gqlHandler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		DBQueries: h.dbQueries,
-		AppConfig: h.appConfig,
-	}}))
+func NewGraphqlHandler(logger *zerolog.Logger, resolver *graph.Resolver) *gqlHandler.Server {
+	srv := gqlHandler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
 	srv.AddTransport(transport.Websocket{
 		// Keep-alives are important for WebSockets to detect dead connections. This is
@@ -40,7 +38,7 @@ func (h *Handler) GraphqlHandler(w http.ResponseWriter, r *http.Request) {
 				// Allow exact match on host.
 				origin := r.Header.Get("Origin")
 
-				h.logger.Info().Msgf("origin: %s", origin)
+				logger.Info().Msgf("origin: %s", origin)
 
 				return true
 				// if origin == "" || origin == r.Header.Get("Host") {
@@ -68,11 +66,12 @@ func (h *Handler) GraphqlHandler(w http.ResponseWriter, r *http.Request) {
 		Cache: lru.New[string](100),
 	})
 
-	srv.ServeHTTP(w, r)
+	return srv
 }
 
-func (h *Handler) GraphqlPlaygroundHandler(w http.ResponseWriter, r *http.Request) {
+func NewGraphqlPlaygroundHandler() http.HandlerFunc {
 	playgroundHandler := playground.ApolloSandboxHandler("GraphQL playground", "/graphql")
 
-	playgroundHandler.ServeHTTP(w, r)
+	// playgroundHandler.ServeHTTP(w, r)
+	return playgroundHandler
 }

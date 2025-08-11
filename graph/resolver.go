@@ -6,6 +6,9 @@ import (
 	"golang-whatsapp-clone/config"
 	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph/model"
+	"golang-whatsapp-clone/service"
+
+	"github.com/rs/zerolog"
 )
 
 // This file will not be regenerated automatically.
@@ -15,8 +18,10 @@ import (
 //go:generate go run github.com/99designs/gqlgen generate
 
 type Resolver struct {
-	DBQueries *db.Queries
-	AppConfig *config.AppConfig
+	DBQueries           *db.Queries
+	AppConfig           *config.AppConfig
+	ConversationService *service.ConversationService
+	Logger              *zerolog.Logger
 }
 
 func (r *Resolver) mustGetAuthenticatedUser(ctx context.Context) (*auth.UserContext, *model.UnauthorizedError) {
