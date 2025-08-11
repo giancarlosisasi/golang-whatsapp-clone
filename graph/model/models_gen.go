@@ -40,6 +40,10 @@ type SendMessageResult interface {
 	IsSendMessageResult()
 }
 
+type StartDirectConversationResult interface {
+	IsStartDirectConversationResult()
+}
+
 type Success interface {
 	IsSuccess()
 	GetSuccess() bool
@@ -51,6 +55,17 @@ type AppTime struct {
 }
 
 type Conversation struct {
+	ID            string               `json:"id"`
+	Type          ConversationTypeEnum `json:"type"`
+	Name          *string              `json:"name,omitempty"`
+	Description   *string              `json:"description,omitempty"`
+	AvatarURL     *string              `json:"avatarUrl,omitempty"`
+	CreatedAt     string               `json:"createdAt"`
+	UpdatedAt     string               `json:"updatedAt"`
+	LastMessageAt *string              `json:"lastMessageAt,omitempty"`
+}
+
+type ConversationListItem struct {
 	ID            string                     `json:"id"`
 	Type          *ConversationTypeEnum      `json:"type,omitempty"`
 	Participants  []*ConversationParticipant `json:"participants"`
@@ -77,12 +92,12 @@ func (this ConversationMessagesQuerySuccess) GetSuccess() bool { return this.Suc
 func (ConversationMessagesQuerySuccess) IsConversationMessagesQueryResult() {}
 
 type ConversationParticipant struct {
-	ID           string        `json:"id"`
-	User         *User         `json:"user"`
-	Conversation *Conversation `json:"conversation"`
-	JoinedAt     string        `json:"joinedAt"`
-	LastReadAt   *string       `json:"lastReadAt,omitempty"`
-	IsActive     bool          `json:"isActive"`
+	ID           string                `json:"id"`
+	User         *User                 `json:"user"`
+	Conversation *ConversationListItem `json:"conversation"`
+	JoinedAt     string                `json:"joinedAt"`
+	LastReadAt   *string               `json:"lastReadAt,omitempty"`
+	IsActive     bool                  `json:"isActive"`
 }
 
 type ConversationUpdatedSubscriptionInput struct {
@@ -132,8 +147,8 @@ type MarkConversationAsReadInput struct {
 }
 
 type MarkConversationAsReadSuccess struct {
-	Success      bool          `json:"success"`
-	Conversation *Conversation `json:"conversation"`
+	Success      bool                  `json:"success"`
+	Conversation *ConversationListItem `json:"conversation"`
 }
 
 func (MarkConversationAsReadSuccess) IsSuccess()            {}
@@ -142,14 +157,14 @@ func (this MarkConversationAsReadSuccess) GetSuccess() bool { return this.Succes
 func (MarkConversationAsReadSuccess) IsMarkConversationAsReadResult() {}
 
 type Message struct {
-	ID             string          `json:"id"`
-	Conversation   *Conversation   `json:"conversation"`
-	Sender         *User           `json:"sender"`
-	Content        string          `json:"content"`
-	MessageType    MessageTypeEnum `json:"messageType"`
-	CreatedAt      string          `json:"createdAt"`
-	EditedAt       *string         `json:"editedAt,omitempty"`
-	ReplyToMessage *Message        `json:"replyToMessage,omitempty"`
+	ID             string                `json:"id"`
+	Conversation   *ConversationListItem `json:"conversation"`
+	Sender         *User                 `json:"sender"`
+	Content        string                `json:"content"`
+	MessageType    MessageTypeEnum       `json:"messageType"`
+	CreatedAt      string                `json:"createdAt"`
+	EditedAt       *string               `json:"editedAt,omitempty"`
+	ReplyToMessage *Message              `json:"replyToMessage,omitempty"`
 }
 
 type MessageAddedSubscriptionInput struct {
@@ -160,8 +175,8 @@ type Mutation struct {
 }
 
 type MyConversationsQuerySuccess struct {
-	Success       bool            `json:"success"`
-	Conversations []*Conversation `json:"conversations"`
+	Success       bool                    `json:"success"`
+	Conversations []*ConversationListItem `json:"conversations"`
 }
 
 func (MyConversationsQuerySuccess) IsSuccess()            {}
@@ -183,6 +198,8 @@ func (NotFoundError) IsSendMessageResult() {}
 func (NotFoundError) IsMarkConversationAsReadResult() {}
 
 func (NotFoundError) IsEditMessageResult() {}
+
+func (NotFoundError) IsStartDirectConversationResult() {}
 
 func (NotFoundError) IsError()                {}
 func (this NotFoundError) GetCode() string    { return this.Code }
@@ -230,9 +247,25 @@ func (ServerError) IsMarkConversationAsReadResult() {}
 
 func (ServerError) IsEditMessageResult() {}
 
+func (ServerError) IsStartDirectConversationResult() {}
+
 func (ServerError) IsError()                {}
 func (this ServerError) GetCode() string    { return this.Code }
 func (this ServerError) GetMessage() string { return this.Message }
+
+type StartDirectConversationInput struct {
+	ParticipantID string `json:"participantId"`
+}
+
+type StartDirectConversationSuccess struct {
+	Success      bool          `json:"success"`
+	Conversation *Conversation `json:"conversation"`
+}
+
+func (StartDirectConversationSuccess) IsSuccess()            {}
+func (this StartDirectConversationSuccess) GetSuccess() bool { return this.Success }
+
+func (StartDirectConversationSuccess) IsStartDirectConversationResult() {}
 
 type Subscription struct {
 }
@@ -258,6 +291,8 @@ func (UnauthorizedError) IsSendMessageResult() {}
 func (UnauthorizedError) IsMarkConversationAsReadResult() {}
 
 func (UnauthorizedError) IsEditMessageResult() {}
+
+func (UnauthorizedError) IsStartDirectConversationResult() {}
 
 func (UnauthorizedError) IsError()                {}
 func (this UnauthorizedError) GetCode() string    { return this.Code }

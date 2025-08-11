@@ -12,6 +12,17 @@ enum MessageTypeEnum {
 
 type Conversation {
   id: ID!
+  type: ConversationTypeEnum!
+  name: String
+  description: String
+  avatarUrl: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  lastMessageAt: DateTime
+}
+
+type ConversationListItem {
+  id: ID!
   type: ConversationTypeEnum
   participants: [ConversationParticipant!]!
   lastMessage: Message
@@ -24,7 +35,7 @@ type Conversation {
 type ConversationParticipant {
   id: ID!
   user: User!
-  conversation: Conversation!
+  conversation: ConversationListItem!
   joinedAt: DateTime!
   lastReadAt: DateTime
   isActive: Boolean!
@@ -32,7 +43,7 @@ type ConversationParticipant {
 
 type Message {
   id: ID!
-  conversation: Conversation!
+  conversation: ConversationListItem!
   sender: User!
   content: String!
   messageType: MessageTypeEnum!
@@ -41,6 +52,7 @@ type Message {
   replyToMessage: Message
 }
 
+# =================== Mutation
 input ConversationMessageInput {
   conversationId: ID!
   pagination: Pagination
@@ -52,7 +64,7 @@ input GetOrCreateDirectConversationInput {
 
 type MyConversationsQuerySuccess implements Success {
   success: Boolean!
-  conversations: [Conversation!]!
+  conversations: [ConversationListItem!]!
 }
 
 union MyConversationsQueryResult = MyConversationsQuerySuccess | ServerError | UnauthorizedError
@@ -77,6 +89,7 @@ extend type Query {
   getOrCreateDirectConversation(input: GetOrCreateDirectConversationInput!): GetOrCreateDirectConversationResult!
 }
 
+# =================== Mutations ===================
 
 input SendMessageInput {
   conversationId: ID!
@@ -103,7 +116,7 @@ union SendMessageResult = SendMessageSuccess | ServerError | UnauthorizedError |
 
 type MarkConversationAsReadSuccess implements Success {
   success: Boolean!
-  conversation: Conversation!
+  conversation: ConversationListItem!
 }
 
 union MarkConversationAsReadResult = MarkConversationAsReadSuccess | ServerError | UnauthorizedError | NotFoundError
@@ -115,11 +128,27 @@ type EditMessageSuccess implements Success {
 
 union EditMessageResult = EditMessageSuccess | ServerError | UnauthorizedError | NotFoundError
 
+# Create a 1:1 conversation
+input StartDirectConversationInput {
+  participantId: ID!
+}
+
+type StartDirectConversationSuccess implements Success {
+  success: Boolean!
+  conversation: Conversation!
+}
+
+union StartDirectConversationResult = StartDirectConversationSuccess | ServerError | UnauthorizedError | NotFoundError
+
+
 extend type Mutation {
   sendMessage(input: SendMessageInput!): SendMessageResult!
   markConversationAsRead(input: MarkConversationAsReadInput!): MarkConversationAsReadResult!
   editMessage(input: EditMessageInput!): EditMessageResult!
+  startDirectConversation(input: StartDirectConversationInput!): StartDirectConversationResult!
 }
+
+# =================== Subscriptions ===================
 
 input MessageAddedSubscriptionInput {
   userId: ID!
@@ -142,7 +171,7 @@ extend type Subscription {
   # Listen for new messages in user's conversations
   messageAdded(input: MessageAddedSubscriptionInput!): Message!
   # Listen for conversation updated (last message, unread counts, etc)
-  conversationUpdated(input: ConversationUpdatedSubscriptionInput!): Conversation!
+  conversationUpdated(input: ConversationUpdatedSubscriptionInput!): ConversationListItem!
   # Listen for typing indicators
   userTyping(input: UserTypingSubscriptionInput!): TypingEvent!
 }

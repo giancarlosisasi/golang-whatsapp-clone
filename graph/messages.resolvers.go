@@ -27,6 +27,44 @@ func (r *mutationResolver) EditMessage(ctx context.Context, input model.EditMess
 	panic(fmt.Errorf("not implemented: EditMessage - editMessage"))
 }
 
+// StartDirectConversation is the resolver for the startDirectConversation field.
+func (r *mutationResolver) StartDirectConversation(ctx context.Context, input model.StartDirectConversationInput) (model.StartDirectConversationResult, error) {
+	user, graphqlError := r.mustGetAuthenticatedUser(ctx)
+
+	if graphqlError != nil {
+		return graphqlError, nil
+	}
+
+	conversation, err := r.ConversationService.GetOrCreateDirectConversation(ctx, user.UserID, input.ParticipantID)
+
+	if err != nil {
+		return model.ServerError{
+			Message: "Error to create the conversation",
+			Code:    customerrors.CodeInternalError,
+		}, nil
+	}
+
+	lastMessageAt := conversation.LastMessageAt.Time.String()
+
+	conversationType := model.ConversationTypeEnumDirect
+	if conversation.Type == model.ConversationTypeEnumGroup.String() {
+		conversationType = model.ConversationTypeEnumGroup
+	}
+
+	return model.StartDirectConversationSuccess{
+		Success: true,
+		Conversation: &model.Conversation{
+			ID:            conversation.ID.String(),
+			Type:          conversationType,
+			Name:          &conversation.Name.String,
+			AvatarURL:     &conversation.AvatarUrl.String,
+			CreatedAt:     conversation.CreatedAt.Time.String(),
+			UpdatedAt:     conversation.UpdatedAt.Time.String(),
+			LastMessageAt: &lastMessageAt,
+		},
+	}, nil
+}
+
 // MyConversations is the resolver for the myConversations field.
 func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversationsQueryResult, error) {
 	user, graphqlError := r.mustGetAuthenticatedUser(ctx)
@@ -50,7 +88,6 @@ func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversati
 	var conversations model.MyConversationsQueryResult
 
 	return conversations, nil
-
 }
 
 // ConversationMessages is the resolver for the conversationMessages field.
@@ -69,7 +106,7 @@ func (r *subscriptionResolver) MessageAdded(ctx context.Context, input model.Mes
 }
 
 // ConversationUpdated is the resolver for the conversationUpdated field.
-func (r *subscriptionResolver) ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan *model.Conversation, error) {
+func (r *subscriptionResolver) ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan *model.ConversationListItem, error) {
 	panic(fmt.Errorf("not implemented: ConversationUpdated - conversationUpdated"))
 }
 

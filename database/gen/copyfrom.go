@@ -31,6 +31,7 @@ func (r iteratorForCreateParticipants) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].ConversationID,
 		r.rows[0].UserID,
+		r.rows[0].Role,
 	}, nil
 }
 
@@ -39,5 +40,5 @@ func (r iteratorForCreateParticipants) Err() error {
 }
 
 func (q *Queries) CreateParticipants(ctx context.Context, arg []CreateParticipantsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"conversation_participants"}, []string{"conversation_id", "user_id"}, &iteratorForCreateParticipants{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"conversation_participants"}, []string{"conversation_id", "user_id", "role"}, &iteratorForCreateParticipants{rows: arg})
 }

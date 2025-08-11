@@ -37,12 +37,13 @@ func NewServer() (*App, *http.Server, http.Handler) {
 	dbQueries := db.New(dbpool)
 
 	// repositories
-	conversationRepository := repository.NewConversationRepository(dbQueries)
+	conversationRepository := repository.NewConversationRepository(dbQueries, log)
+	participantRepository := repository.NewParticipantRepository(dbQueries, log)
 
 	// services
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
-	conversationService := service.NewConversationService(conversationRepository)
+	conversationService := service.NewConversationService(conversationRepository, participantRepository)
 
 	handlers := handler.NewHandler(
 		log,

@@ -37,6 +37,7 @@ func (q *Queries) CountUnreadMessages(ctx context.Context, arg CountUnreadMessag
 type CreateParticipantsParams struct {
 	ConversationID pgtype.UUID
 	UserID         pgtype.UUID
+	Role           string
 }
 
 const getParticipantByUserAndConversation = `-- name: GetParticipantByUserAndConversation :one

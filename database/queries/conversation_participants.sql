@@ -1,9 +1,10 @@
 -- name: CreateParticipants :copyfrom
 INSERT INTO conversation_participants (
     conversation_id,
-    user_id
+    user_id,
+    role
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 );
 
 -- name: GetParticipantByUserAndConversation :one
