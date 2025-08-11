@@ -20,3 +20,9 @@ WHERE email = $1;
 SELECT id, name, google_id, email, avatar_url, created_at, updated_at
 FROM users
 WHERE google_id = $1;
+
+
+-- delete all except the one with email ending in @gmail.com
+-- name: RemoveAllUsers :exec
+DELETE FROM users
+WHERE email NOT LIKE '%@gmail.com';

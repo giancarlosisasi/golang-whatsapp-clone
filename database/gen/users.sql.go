@@ -53,6 +53,17 @@ func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID pgtype.Text) (
 	return i, err
 }
 
+const removeAllUsers = `-- name: RemoveAllUsers :exec
+DELETE FROM users
+WHERE email NOT LIKE '%@gmail.com'
+`
+
+// delete all except the one with email ending in @gmail.com
+func (q *Queries) RemoveAllUsers(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, removeAllUsers)
+	return err
+}
+
 const upsertUserByGoogleAuthSafe = `-- name: UpsertUserByGoogleAuthSafe :one
 INSERT INTO users (name, google_id, email, avatar_url, updated_at)
 VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
