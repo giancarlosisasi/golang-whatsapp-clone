@@ -134,8 +134,6 @@ func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversati
 		}
 	}
 
-	r.Logger.Debug().Msgf("my conversations result: %+v", myConversations)
-
 	conversations := []model.ConversationListItem{}
 
 	for _, conversation := range *myConversations {
