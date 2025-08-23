@@ -32,6 +32,15 @@ func (s *ConversationService) GetUserConversations(ctx context.Context, userID s
 	return result, nil
 }
 
+func (s *ConversationService) GetLastMessageFromConversation(ctx context.Context, conversationID string) (*db.GetLastMessageRow, error) {
+	result, err := s.conversationRepository.GetLastMessageFromConversation(ctx, conversationID)
+	if err != nil {
+		return nil, errors.New("error to get the last message")
+	}
+
+	return result, nil
+}
+
 func (s *ConversationService) GetOrCreateDirectConversation(ctx context.Context, user1ID string, user2ID string) (*db.Conversation, error) {
 	// first try to find existing conversation
 	existing, err := s.conversationRepository.FindDirectConversation(ctx, user1ID, user2ID)

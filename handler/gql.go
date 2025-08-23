@@ -65,6 +65,7 @@ func NewGraphqlHandler(logger *zerolog.Logger, resolver *graph.Resolver) *gqlHan
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
+	srv.Use(extension.FixedComplexityLimit(30))
 
 	return srv
 }

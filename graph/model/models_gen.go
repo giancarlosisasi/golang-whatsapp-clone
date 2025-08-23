@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+type ConversationListItem interface {
+	IsConversationListItem()
+}
+
 type ConversationMessagesQueryResult interface {
 	IsConversationMessagesQueryResult()
 }
@@ -55,26 +59,36 @@ type AppTime struct {
 }
 
 type Conversation struct {
-	ID            string               `json:"id"`
-	Type          ConversationTypeEnum `json:"type"`
-	Name          *string              `json:"name,omitempty"`
-	Description   *string              `json:"description,omitempty"`
-	AvatarURL     *string              `json:"avatarUrl,omitempty"`
-	CreatedAt     string               `json:"createdAt"`
-	UpdatedAt     string               `json:"updatedAt"`
-	LastMessageAt *string              `json:"lastMessageAt,omitempty"`
+	ID          string               `json:"id"`
+	Type        ConversationTypeEnum `json:"type"`
+	Name        *string              `json:"name,omitempty"`
+	Description *string              `json:"description,omitempty"`
+	AvatarURL   *string              `json:"avatarUrl,omitempty"`
+	CreatedAt   time.Time            `json:"createdAt"`
+	UpdatedAt   time.Time            `json:"updatedAt"`
 }
 
-type ConversationListItem struct {
-	ID            string                     `json:"id"`
-	Type          *ConversationTypeEnum      `json:"type,omitempty"`
-	Participants  []*ConversationParticipant `json:"participants"`
-	LastMessage   *Message                   `json:"lastMessage,omitempty"`
-	LastMessageAt *string                    `json:"lastMessageAt,omitempty"`
-	UnreadCount   int32                      `json:"unreadCount"`
-	CreatedAt     string                     `json:"createdAt"`
-	UpdatedAt     string                     `json:"updatedAt"`
+type ConversationListItemDirect struct {
+	ID          string               `json:"id"`
+	Type        ConversationTypeEnum `json:"type"`
+	LastMessage *Message             `json:"lastMessage,omitempty"`
+	UnreadCount int32                `json:"unreadCount"`
+	CreatedAt   time.Time            `json:"createdAt"`
+	UpdatedAt   time.Time            `json:"updatedAt"`
 }
+
+func (ConversationListItemDirect) IsConversationListItem() {}
+
+type ConversationListItemGroup struct {
+	ID          string               `json:"id"`
+	Type        ConversationTypeEnum `json:"type"`
+	LastMessage *Message             `json:"lastMessage,omitempty"`
+	UnreadCount int32                `json:"unreadCount"`
+	CreatedAt   time.Time            `json:"createdAt"`
+	UpdatedAt   time.Time            `json:"updatedAt"`
+}
+
+func (ConversationListItemGroup) IsConversationListItem() {}
 
 type ConversationMessageInput struct {
 	ConversationID string      `json:"conversationId"`
@@ -92,12 +106,11 @@ func (this ConversationMessagesQuerySuccess) GetSuccess() bool { return this.Suc
 func (ConversationMessagesQuerySuccess) IsConversationMessagesQueryResult() {}
 
 type ConversationParticipant struct {
-	ID           string                `json:"id"`
-	User         *User                 `json:"user"`
-	Conversation *ConversationListItem `json:"conversation"`
-	JoinedAt     string                `json:"joinedAt"`
-	LastReadAt   *string               `json:"lastReadAt,omitempty"`
-	IsActive     bool                  `json:"isActive"`
+	ID         string     `json:"id"`
+	User       *User      `json:"user"`
+	JoinedAt   time.Time  `json:"joinedAt"`
+	LastReadAt *time.Time `json:"lastReadAt,omitempty"`
+	IsActive   bool       `json:"isActive"`
 }
 
 type ConversationUpdatedSubscriptionInput struct {
@@ -147,8 +160,8 @@ type MarkConversationAsReadInput struct {
 }
 
 type MarkConversationAsReadSuccess struct {
-	Success      bool                  `json:"success"`
-	Conversation *ConversationListItem `json:"conversation"`
+	Success      bool                 `json:"success"`
+	Conversation ConversationListItem `json:"conversation"`
 }
 
 func (MarkConversationAsReadSuccess) IsSuccess()            {}
@@ -157,14 +170,13 @@ func (this MarkConversationAsReadSuccess) GetSuccess() bool { return this.Succes
 func (MarkConversationAsReadSuccess) IsMarkConversationAsReadResult() {}
 
 type Message struct {
-	ID             string                `json:"id"`
-	Conversation   *ConversationListItem `json:"conversation"`
-	Sender         *User                 `json:"sender"`
-	Content        string                `json:"content"`
-	MessageType    MessageTypeEnum       `json:"messageType"`
-	CreatedAt      string                `json:"createdAt"`
-	EditedAt       *string               `json:"editedAt,omitempty"`
-	ReplyToMessage *Message              `json:"replyToMessage,omitempty"`
+	ID             string          `json:"id"`
+	Sender         *User           `json:"sender"`
+	Content        string          `json:"content"`
+	MessageType    MessageTypeEnum `json:"messageType"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	EditedAt       *time.Time      `json:"editedAt,omitempty"`
+	ReplyToMessage *Message        `json:"replyToMessage,omitempty"`
 }
 
 type MessageAddedSubscriptionInput struct {
@@ -175,8 +187,8 @@ type Mutation struct {
 }
 
 type MyConversationsQuerySuccess struct {
-	Success       bool                    `json:"success"`
-	Conversations []*ConversationListItem `json:"conversations"`
+	Success       bool                   `json:"success"`
+	Conversations []ConversationListItem `json:"conversations"`
 }
 
 func (MyConversationsQuerySuccess) IsSuccess()            {}
@@ -271,8 +283,8 @@ type Subscription struct {
 }
 
 type TypingEvent struct {
-	WritingBy string `json:"writingBy"`
-	WritingAt string `json:"writingAt"`
+	WritingBy string    `json:"writingBy"`
+	WritingAt time.Time `json:"writingAt"`
 }
 
 type UnauthorizedError struct {

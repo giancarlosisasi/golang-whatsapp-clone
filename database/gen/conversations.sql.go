@@ -72,37 +72,148 @@ func (q *Queries) FindDirectConversation(ctx context.Context, arg FindDirectConv
 	return i, err
 }
 
+const getLastMessage = `-- name: GetLastMessage :many
+
+WITH ranked_messages AS (
+    SELECT
+        m.id,
+        m.conversation_id,
+        m.sender_id,
+        m.content,
+        m.message_type,
+        m.created_at,
+        m.edited_at,
+        m.reply_to_message_id,
+        sender.name as sender_name,
+        sender.avatar_url as sender_avatar_url,
+        sender.email as sender_email,
+        sender.created_at as sender_created_at,
+        sender.updated_at as sender_updated_at,
+        ROW_NUMBER() OVER (PARTITION BY m.conversation_id ORDER BY m.created_at DESC) as rn
+    FROM messages m
+    JOIN users sender ON m.sender_id = sender.id
+    WHERE m.conversation_id = ANY($1::uuid[])
+)
+SELECT
+    id,
+    conversation_id,
+    sender_id,
+    content,
+    message_type,
+    created_at,
+    edited_at,
+    reply_to_message_id,
+    sender_name,
+    sender_avatar_url,
+    sender_email,
+    sender_created_at,
+    sender_updated_at
+FROM ranked_messages
+WHERE rn = 1
+ORDER BY created_at DESC
+`
+
+type GetLastMessageRow struct {
+	ID               pgtype.UUID
+	ConversationID   pgtype.UUID
+	SenderID         pgtype.UUID
+	Content          string
+	MessageType      string
+	CreatedAt        pgtype.Timestamptz
+	EditedAt         pgtype.Timestamptz
+	ReplyToMessageID pgtype.UUID
+	SenderName       pgtype.Text
+	SenderAvatarUrl  pgtype.Text
+	SenderEmail      string
+	SenderCreatedAt  pgtype.Timestamptz
+	SenderUpdatedAt  pgtype.Timestamptz
+}
+
+// -- name: GetConversationParticipants :many
+// SELECT
+//
+//	cp.id,
+//	cp.conversation_id,
+//	cp.user_id,
+//	cp.joined_at,
+//	cp.last_read_at,
+//	cp.is_active,
+//	u.id as user_id,
+//	u.name as user_name,
+//	u.avatar_url as user_avatar_url
+//
+// FROM conversation_participants cp
+// JOIN users u ON cp.user_id = u.id
+// WHERE cp.conversation_id = ANY($1::uuid[])
+//
+//	AND cp.is_active = true
+//
+// ORDER BY cp.joined_at ASC;
+func (q *Queries) GetLastMessage(ctx context.Context, dollar_1 []pgtype.UUID) ([]GetLastMessageRow, error) {
+	rows, err := q.db.Query(ctx, getLastMessage, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLastMessageRow
+	for rows.Next() {
+		var i GetLastMessageRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ConversationID,
+			&i.SenderID,
+			&i.Content,
+			&i.MessageType,
+			&i.CreatedAt,
+			&i.EditedAt,
+			&i.ReplyToMessageID,
+			&i.SenderName,
+			&i.SenderAvatarUrl,
+			&i.SenderEmail,
+			&i.SenderCreatedAt,
+			&i.SenderUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserConversations = `-- name: GetUserConversations :many
 SELECT
-    c.id, c.type, c.name, c.description, c.avatar_url, c.created_at, c.updated_at, c.last_message_at,
-    m.content as last_message_content,
-    m.created_at as last_message_created_at,
-    sender.name as last_message_sender_name
+    c.id,
+    c.type,
+    c.last_message_at,
+    c.created_at,
+    c.updated_at,
+    (
+        SELECT COUNT(*)::INTEGER
+        FROM messages unread_m
+        WHERE unread_m.conversation_id = c.id
+            AND unread_m.created_at > cp.last_read_at
+            AND unread_m.sender_id != $1
+    ) as unread_count
 FROM conversations c
 JOIN conversation_participants cp ON c.id = cp.conversation_id
-LEFT JOIN messages m ON c.id = m.conversation_id
-    AND m.created_at = c.last_message_at
-LEFT JOIN users sender ON m.sender_id = sender.id
 WHERE cp.user_id = $1 AND cp.is_active = true
-ORDER BY c.last_message_at DESC
+ORDER BY c.last_message_at DESC NULLS LAST
 `
 
 type GetUserConversationsRow struct {
-	ID                    pgtype.UUID
-	Type                  string
-	Name                  pgtype.Text
-	Description           pgtype.Text
-	AvatarUrl             pgtype.Text
-	CreatedAt             pgtype.Timestamptz
-	UpdatedAt             pgtype.Timestamptz
-	LastMessageAt         pgtype.Timestamptz
-	LastMessageContent    pgtype.Text
-	LastMessageCreatedAt  pgtype.Timestamptz
-	LastMessageSenderName pgtype.Text
+	ID            pgtype.UUID
+	Type          string
+	LastMessageAt pgtype.Timestamptz
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	UnreadCount   int32
 }
 
-func (q *Queries) GetUserConversations(ctx context.Context, userID pgtype.UUID) ([]GetUserConversationsRow, error) {
-	rows, err := q.db.Query(ctx, getUserConversations, userID)
+func (q *Queries) GetUserConversations(ctx context.Context, senderID pgtype.UUID) ([]GetUserConversationsRow, error) {
+	rows, err := q.db.Query(ctx, getUserConversations, senderID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,15 +224,10 @@ func (q *Queries) GetUserConversations(ctx context.Context, userID pgtype.UUID) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,
-			&i.Name,
-			&i.Description,
-			&i.AvatarUrl,
+			&i.LastMessageAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.LastMessageAt,
-			&i.LastMessageContent,
-			&i.LastMessageCreatedAt,
-			&i.LastMessageSenderName,
+			&i.UnreadCount,
 		); err != nil {
 			return nil, err
 		}

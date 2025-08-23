@@ -16,43 +16,47 @@ type Conversation {
   name: String
   description: String
   avatarUrl: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  lastMessageAt: DateTime
+  createdAt: Time!
+  updatedAt: Time!
 }
 
-type ConversationListItem {
+type ConversationListItemDirect {
   id: ID!
-  type: ConversationTypeEnum
-  participants: [ConversationParticipant!]!
+  type: ConversationTypeEnum!
   lastMessage: Message
-  lastMessageAt: DateTime
   unreadCount: Int!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type ConversationListItemGroup {
+  id: ID!
+  type: ConversationTypeEnum!
+  lastMessage: Message
+  unreadCount: Int!
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type ConversationParticipant {
   id: ID!
   user: User!
-  conversation: ConversationListItem!
-  joinedAt: DateTime!
-  lastReadAt: DateTime
+  joinedAt: Time!
+  lastReadAt: Time
   isActive: Boolean!
 }
 
 type Message {
   id: ID!
-  conversation: ConversationListItem!
   sender: User!
   content: String!
   messageType: MessageTypeEnum!
-  createdAt: DateTime!
-  editedAt: DateTime
+  createdAt: Time!
+  editedAt: Time
   replyToMessage: Message
 }
 
-# =================== Mutation
+# =================== Queries  ===================
 input ConversationMessageInput {
   conversationId: ID!
   pagination: Pagination
@@ -61,6 +65,8 @@ input ConversationMessageInput {
 input GetOrCreateDirectConversationInput {
   userId: ID!
 }
+
+union ConversationListItem = ConversationListItemDirect | ConversationListItemGroup
 
 type MyConversationsQuerySuccess implements Success {
   success: Boolean!
@@ -164,7 +170,7 @@ input UserTypingSubscriptionInput {
 
 type TypingEvent {
   writingBy: ID!
-  writingAt: DateTime!
+  writingAt: Time!
 }
 
 extend type Subscription {

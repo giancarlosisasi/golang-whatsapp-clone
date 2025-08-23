@@ -12,6 +12,40 @@ import (
 	"golang-whatsapp-clone/graph/model"
 )
 
+// LastMessage is the resolver for the lastMessage field.
+func (r *conversationListItemDirectResolver) LastMessage(ctx context.Context, obj *model.ConversationListItemDirect) (*model.Message, error) {
+	lastMessage, err := r.ConversationService.GetLastMessageFromConversation(ctx, obj.ID)
+	if err != nil {
+		return nil, nil
+	}
+
+	if lastMessage == nil {
+		return nil, nil
+	}
+
+	return &model.Message{
+		ID:          lastMessage.ID.String(),
+		Content:     lastMessage.Content,
+		MessageType: model.MessageTypeEnum(lastMessage.MessageType),
+		CreatedAt:   lastMessage.CreatedAt.Time,
+		EditedAt:    &lastMessage.EditedAt.Time,
+		Sender: &model.User{
+			ID:        lastMessage.SenderID.String(),
+			Name:      &lastMessage.SenderName.String,
+			Email:     lastMessage.SenderEmail,
+			AvatarURL: &lastMessage.SenderAvatarUrl.String,
+			CreatedAt: lastMessage.SenderCreatedAt.Time,
+			UpdatedAt: lastMessage.SenderUpdatedAt.Time,
+		},
+	}, nil
+
+}
+
+// LastMessage is the resolver for the lastMessage field.
+func (r *conversationListItemGroupResolver) LastMessage(ctx context.Context, obj *model.ConversationListItemGroup) (*model.Message, error) {
+	panic(fmt.Errorf("not implemented: LastMessage - lastMessage"))
+}
+
 // SendMessage is the resolver for the sendMessage field.
 func (r *mutationResolver) SendMessage(ctx context.Context, input model.SendMessageInput) (model.SendMessageResult, error) {
 	panic(fmt.Errorf("not implemented: SendMessage - sendMessage"))
@@ -44,8 +78,6 @@ func (r *mutationResolver) StartDirectConversation(ctx context.Context, input mo
 		}, nil
 	}
 
-	lastMessageAt := conversation.LastMessageAt.Time.String()
-
 	conversationType := model.ConversationTypeEnumDirect
 	if conversation.Type == model.ConversationTypeEnumGroup.String() {
 		conversationType = model.ConversationTypeEnumGroup
@@ -54,13 +86,12 @@ func (r *mutationResolver) StartDirectConversation(ctx context.Context, input mo
 	return model.StartDirectConversationSuccess{
 		Success: true,
 		Conversation: &model.Conversation{
-			ID:            conversation.ID.String(),
-			Type:          conversationType,
-			Name:          &conversation.Name.String,
-			AvatarURL:     &conversation.AvatarUrl.String,
-			CreatedAt:     conversation.CreatedAt.Time.String(),
-			UpdatedAt:     conversation.UpdatedAt.Time.String(),
-			LastMessageAt: &lastMessageAt,
+			ID:        conversation.ID.String(),
+			Type:      conversationType,
+			Name:      &conversation.Name.String,
+			AvatarURL: &conversation.AvatarUrl.String,
+			CreatedAt: conversation.CreatedAt.Time,
+			UpdatedAt: conversation.UpdatedAt.Time,
 		},
 	}, nil
 }
@@ -85,9 +116,41 @@ func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversati
 
 	r.Logger.Debug().Msgf("my conversations result: %+v", myConversations)
 
-	var conversations model.MyConversationsQueryResult
+	conversations := []model.ConversationListItem{}
 
-	return conversations, nil
+	for _, conversation := range *myConversations {
+
+		// var lastMessage *model.Message
+
+		// if conversation.LastMessageID.String() != "" {
+		// 	lastMessage = &model.Message{
+		// 		ID:        conversation.LastMessageID.String(),
+		// 		Content:   conversation.LastMessageContent.String,
+		// 		CreatedAt: conversation.LastMessageCreatedAt.Time,
+		// 		Sender: &model.User{
+		// 			ID:   conversation.LastMessageSenderID.String(),
+		// 			Name: &conversation.LastMessageSenderName.String,
+		// 		},
+		// 	}
+		// }
+
+		conversationItem := model.ConversationListItemDirect{
+			ID:   conversation.ID.String(),
+			Type: (model.ConversationTypeEnum)(conversation.Type),
+			// Participant: &model.ConversationParticipant{},
+			// LastMessage:   lastMessage,
+			UnreadCount: conversation.UnreadCount,
+			CreatedAt:   conversation.CreatedAt.Time,
+			UpdatedAt:   conversation.UpdatedAt.Time,
+		}
+
+		conversations = append(conversations, conversationItem)
+	}
+
+	return model.MyConversationsQuerySuccess{
+		Success:       true,
+		Conversations: conversations,
+	}, nil
 }
 
 // ConversationMessages is the resolver for the conversationMessages field.
@@ -106,7 +169,7 @@ func (r *subscriptionResolver) MessageAdded(ctx context.Context, input model.Mes
 }
 
 // ConversationUpdated is the resolver for the conversationUpdated field.
-func (r *subscriptionResolver) ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan *model.ConversationListItem, error) {
+func (r *subscriptionResolver) ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan model.ConversationListItem, error) {
 	panic(fmt.Errorf("not implemented: ConversationUpdated - conversationUpdated"))
 }
 
@@ -114,3 +177,31 @@ func (r *subscriptionResolver) ConversationUpdated(ctx context.Context, input mo
 func (r *subscriptionResolver) UserTyping(ctx context.Context, input model.UserTypingSubscriptionInput) (<-chan *model.TypingEvent, error) {
 	panic(fmt.Errorf("not implemented: UserTyping - userTyping"))
 }
+
+// ConversationListItemDirect returns ConversationListItemDirectResolver implementation.
+func (r *Resolver) ConversationListItemDirect() ConversationListItemDirectResolver {
+	return &conversationListItemDirectResolver{r}
+}
+
+// ConversationListItemGroup returns ConversationListItemGroupResolver implementation.
+func (r *Resolver) ConversationListItemGroup() ConversationListItemGroupResolver {
+	return &conversationListItemGroupResolver{r}
+}
+
+type conversationListItemDirectResolver struct{ *Resolver }
+type conversationListItemGroupResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *conversationListItemDirectResolver) Participant(ctx context.Context, obj *model.ConversationListItemDirect) (*model.ConversationParticipant, error) {
+	panic(fmt.Errorf("not implemented: Participant - participant"))
+}
+func (r *conversationListItemGroupResolver) Participants(ctx context.Context, obj *model.ConversationListItemGroup) ([]*model.ConversationParticipant, error) {
+	panic(fmt.Errorf("not implemented: Participants - participants"))
+}
+*/

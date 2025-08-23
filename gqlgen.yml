@@ -157,3 +157,16 @@ models:
     model:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
+
+  ConversationListItemDirect:
+    fields:
+      participant:
+        resolver: true
+      lastMessage:
+        resolver: true
+  ConversationListItemGroup:
+    fields:
+      participants:
+        resolver: true
+      lastMessage:
+        resolver: true
