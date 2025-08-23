@@ -65,9 +65,15 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 const getConversationMessages = `-- name: GetConversationMessages :many
 SELECT
     m.id, m.conversation_id, m.sender_id, m.content, m.message_type, m.reply_to_message_id, m.media_url, m.media_filename, m.media_size, m.media_mime_type, m.location_latitude, m.location_longitude, m.location_address, m.is_deleted, m.created_at, m.edited_at, m.deleted_at,
+    sender.id as sender_id,
     sender.name as sender_name,
+    sender.email as sender_email,
     sender.avatar_url as sender_avatar_url,
+    sender.created_at as sender_created_at,
+    sender.updated_at as sender_updated_at,
+    reply_msg.id as reply_id,
     reply_msg.content as reply_content,
+    reply_msg.message_type as reply_message_type,
     reply_sender.name as reply_sender_name
 FROM messages m
 JOIN users sender ON m.sender_id = sender.id
@@ -102,9 +108,15 @@ type GetConversationMessagesRow struct {
 	CreatedAt         pgtype.Timestamptz
 	EditedAt          pgtype.Timestamptz
 	DeletedAt         pgtype.Timestamptz
+	SenderID_2        pgtype.UUID
 	SenderName        pgtype.Text
+	SenderEmail       string
 	SenderAvatarUrl   pgtype.Text
+	SenderCreatedAt   pgtype.Timestamptz
+	SenderUpdatedAt   pgtype.Timestamptz
+	ReplyID           pgtype.UUID
 	ReplyContent      pgtype.Text
+	ReplyMessageType  pgtype.Text
 	ReplySenderName   pgtype.Text
 }
 
@@ -135,9 +147,15 @@ func (q *Queries) GetConversationMessages(ctx context.Context, arg GetConversati
 			&i.CreatedAt,
 			&i.EditedAt,
 			&i.DeletedAt,
+			&i.SenderID_2,
 			&i.SenderName,
+			&i.SenderEmail,
 			&i.SenderAvatarUrl,
+			&i.SenderCreatedAt,
+			&i.SenderUpdatedAt,
+			&i.ReplyID,
 			&i.ReplyContent,
+			&i.ReplyMessageType,
 			&i.ReplySenderName,
 		); err != nil {
 			return nil, err

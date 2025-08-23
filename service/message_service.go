@@ -26,3 +26,13 @@ func (s *MessageService) CreateMessage(ctx context.Context, conversationID strin
 
 	return message, nil
 }
+
+func (s *MessageService) GetMessages(ctx context.Context, conversationID string, limit int32, offset int32) (*[]db.GetConversationMessagesRow, error) {
+	result, err := s.MessageRepository.GetMessages(ctx, conversationID, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

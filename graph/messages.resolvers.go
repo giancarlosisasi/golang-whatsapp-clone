@@ -175,7 +175,65 @@ func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversati
 
 // ConversationMessages is the resolver for the conversationMessages field.
 func (r *queryResolver) ConversationMessages(ctx context.Context, input model.ConversationMessageInput) (model.ConversationMessagesQueryResult, error) {
-	panic(fmt.Errorf("not implemented: ConversationMessages - conversationMessages"))
+	_, graphqlError := r.mustGetAuthenticatedUser(ctx)
+	if graphqlError != nil {
+		return graphqlError, nil
+	}
+
+	messages, err := r.MessageService.GetMessages(ctx, input.ConversationID, input.Pagination.Limit, input.Pagination.Offset)
+
+	if err != nil {
+		if errors.Is(err, customerrors.ErrInvalidUUIDValue) {
+			return model.ServerError{
+				ErrorMessage: "the conversation id is invalid",
+				Code:         customerrors.CodeInternalError,
+			}, nil
+		}
+
+		return model.ServerError{
+			ErrorMessage: "internal server error",
+			Code:         customerrors.CodeInternalError,
+		}, nil
+	}
+
+	var messageList []*model.Message
+
+	for _, value := range *messages {
+
+		var replyMessage *model.ReplyMessage
+
+		if value.ReplyID.String() != "" {
+			replyMessage = &model.ReplyMessage{
+				ID:          value.ReplyID.String(),
+				SenderName:  value.ReplySenderName.String,
+				Content:     value.ReplyContent.String,
+				MessageType: model.MessageTypeEnum(value.ReplyMessageType.String),
+			}
+		}
+
+		messageList = append(messageList, &model.Message{
+			ID:             value.ID.String(),
+			Content:        value.Content,
+			MessageType:    model.MessageTypeEnum(value.MessageType),
+			CreatedAt:      value.CreatedAt.Time,
+			EditedAt:       &value.EditedAt.Time,
+			ReplyToMessage: replyMessage,
+			Sender: &model.User{
+				ID:        value.SenderID.String(),
+				Name:      &value.SenderName.String,
+				Email:     value.SenderEmail,
+				AvatarURL: &value.SenderAvatarUrl.String,
+				CreatedAt: value.SenderCreatedAt.Time,
+				UpdatedAt: value.SenderUpdatedAt.Time,
+			},
+		})
+
+	}
+
+	return &model.ConversationMessagesQuerySuccess{
+		Success:  true,
+		Messages: messageList,
+	}, nil
 }
 
 // GetOrCreateDirectConversation is the resolver for the getOrCreateDirectConversation field.

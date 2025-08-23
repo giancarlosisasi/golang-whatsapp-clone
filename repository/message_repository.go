@@ -10,6 +10,7 @@ import (
 
 type MessageRepository interface {
 	CreateMessage(ctx context.Context, conversationID string, senderID string, content string, messageType string, replyToMessageID *string) (*db.Message, error)
+	GetMessages(ctx context.Context, conversationID string, limit int32, offset int32) (*[]db.GetConversationMessagesRow, error)
 }
 
 type MessagePostgresRepository struct {
@@ -52,4 +53,23 @@ func (r *MessagePostgresRepository) CreateMessage(ctx context.Context, conversat
 
 	return &message, nil
 
+}
+
+func (r *MessagePostgresRepository) GetMessages(ctx context.Context, conversationID string, limit int32, offset int32) (*[]db.GetConversationMessagesRow, error) {
+	cui, err := fromStringToUUID(conversationID)
+	if err != nil {
+		return nil, customerrors.ErrInvalidUUIDValue
+	}
+
+	messages, err := r.DBQueries.GetConversationMessages(ctx, db.GetConversationMessagesParams{
+		ConversationID: cui,
+		Limit:          limit,
+		Offset:         offset,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &messages, nil
 }

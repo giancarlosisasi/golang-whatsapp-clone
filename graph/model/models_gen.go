@@ -176,7 +176,7 @@ type Message struct {
 	MessageType    MessageTypeEnum `json:"messageType"`
 	CreatedAt      time.Time       `json:"createdAt"`
 	EditedAt       *time.Time      `json:"editedAt,omitempty"`
-	ReplyToMessage *Message        `json:"replyToMessage,omitempty"`
+	ReplyToMessage *ReplyMessage   `json:"replyToMessage,omitempty"`
 }
 
 type MessageAddedSubscriptionInput struct {
@@ -223,6 +223,13 @@ type Pagination struct {
 }
 
 type Query struct {
+}
+
+type ReplyMessage struct {
+	ID          string          `json:"id"`
+	SenderName  string          `json:"senderName"`
+	Content     string          `json:"content"`
+	MessageType MessageTypeEnum `json:"messageType"`
 }
 
 type SendMessageInput struct {

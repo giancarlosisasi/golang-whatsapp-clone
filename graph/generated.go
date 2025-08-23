@@ -154,6 +154,13 @@ type ComplexityRoot struct {
 		MyConversations               func(childComplexity int) int
 	}
 
+	ReplyMessage struct {
+		Content     func(childComplexity int) int
+		ID          func(childComplexity int) int
+		MessageType func(childComplexity int) int
+		SenderName  func(childComplexity int) int
+	}
+
 	SendMessageSuccess struct {
 		Success func(childComplexity int) int
 	}
@@ -676,6 +683,34 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.MyConversations(childComplexity), true
+
+	case "ReplyMessage.content":
+		if e.complexity.ReplyMessage.Content == nil {
+			break
+		}
+
+		return e.complexity.ReplyMessage.Content(childComplexity), true
+
+	case "ReplyMessage.id":
+		if e.complexity.ReplyMessage.ID == nil {
+			break
+		}
+
+		return e.complexity.ReplyMessage.ID(childComplexity), true
+
+	case "ReplyMessage.messageType":
+		if e.complexity.ReplyMessage.MessageType == nil {
+			break
+		}
+
+		return e.complexity.ReplyMessage.MessageType(childComplexity), true
+
+	case "ReplyMessage.senderName":
+		if e.complexity.ReplyMessage.SenderName == nil {
+			break
+		}
+
+		return e.complexity.ReplyMessage.SenderName(childComplexity), true
 
 	case "SendMessageSuccess.success":
 		if e.complexity.SendMessageSuccess.Success == nil {
@@ -3121,9 +3156,9 @@ func (ec *executionContext) _Message_replyToMessage(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Message)
+	res := resTmp.(*model.ReplyMessage)
 	fc.Result = res
-	return ec.marshalOMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+	return ec.marshalOReplyMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐReplyMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Message_replyToMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3135,21 +3170,15 @@ func (ec *executionContext) fieldContext_Message_replyToMessage(_ context.Contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Message_id(ctx, field)
-			case "sender":
-				return ec.fieldContext_Message_sender(ctx, field)
+				return ec.fieldContext_ReplyMessage_id(ctx, field)
+			case "senderName":
+				return ec.fieldContext_ReplyMessage_senderName(ctx, field)
 			case "content":
-				return ec.fieldContext_Message_content(ctx, field)
+				return ec.fieldContext_ReplyMessage_content(ctx, field)
 			case "messageType":
-				return ec.fieldContext_Message_messageType(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Message_createdAt(ctx, field)
-			case "editedAt":
-				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+				return ec.fieldContext_ReplyMessage_messageType(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ReplyMessage", field.Name)
 		},
 	}
 	return fc, nil
@@ -3968,6 +3997,182 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReplyMessage_id(ctx context.Context, field graphql.CollectedField, obj *model.ReplyMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReplyMessage_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReplyMessage_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReplyMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReplyMessage_senderName(ctx context.Context, field graphql.CollectedField, obj *model.ReplyMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReplyMessage_senderName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SenderName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReplyMessage_senderName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReplyMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReplyMessage_content(ctx context.Context, field graphql.CollectedField, obj *model.ReplyMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReplyMessage_content(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReplyMessage_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReplyMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReplyMessage_messageType(ctx context.Context, field graphql.CollectedField, obj *model.ReplyMessage) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReplyMessage_messageType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.MessageTypeEnum)
+	fc.Result = res
+	return ec.marshalNMessageTypeEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageTypeEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReplyMessage_messageType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReplyMessage",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageTypeEnum does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8677,6 +8882,60 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var replyMessageImplementors = []string{"ReplyMessage"}
+
+func (ec *executionContext) _ReplyMessage(ctx context.Context, sel ast.SelectionSet, obj *model.ReplyMessage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, replyMessageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReplyMessage")
+		case "id":
+			out.Values[i] = ec._ReplyMessage_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "senderName":
+			out.Values[i] = ec._ReplyMessage_senderName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "content":
+			out.Values[i] = ec._ReplyMessage_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "messageType":
+			out.Values[i] = ec._ReplyMessage_messageType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var sendMessageSuccessImplementors = []string{"SendMessageSuccess", "Success", "SendMessageResult"}
 
 func (ec *executionContext) _SendMessageSuccess(ctx context.Context, sel ast.SelectionSet, obj *model.SendMessageSuccess) graphql.Marshaler {
@@ -10046,6 +10305,13 @@ func (ec *executionContext) unmarshalOPagination2ᚖgolangᚑwhatsappᚑcloneᚋ
 	}
 	res, err := ec.unmarshalInputPagination(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOReplyMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐReplyMessage(ctx context.Context, sel ast.SelectionSet, v *model.ReplyMessage) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ReplyMessage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

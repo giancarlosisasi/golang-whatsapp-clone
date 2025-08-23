@@ -46,6 +46,13 @@ type ConversationParticipant {
   isActive: Boolean!
 }
 
+type ReplyMessage {
+  id: ID!
+  senderName: String!
+  content: String!
+  messageType: MessageTypeEnum!
+}
+
 type Message {
   id: ID!
   sender: User!
@@ -53,7 +60,7 @@ type Message {
   messageType: MessageTypeEnum!
   createdAt: Time!
   editedAt: Time
-  replyToMessage: Message
+  replyToMessage: ReplyMessage
 }
 
 # =================== Queries  ===================
