@@ -10,6 +10,13 @@ enum MessageTypeEnum {
   FILE
 }
 
+enum MessageStatusEnum {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
 type Conversation {
   id: ID!
   type: ConversationTypeEnum!
@@ -58,9 +65,12 @@ type Message {
   sender: User!
   content: String!
   messageType: MessageTypeEnum!
+  status: MessageStatusEnum!
+  replyToMessage: ReplyMessage
   createdAt: Time!
   editedAt: Time
-  replyToMessage: ReplyMessage
+  deliveredAt: Time
+  readAt: Time
 }
 
 # =================== Queries  ===================
@@ -166,11 +176,11 @@ extend type Mutation {
 # =================== Subscriptions ===================
 
 input MessageAddedSubscriptionInput {
-  userId: ID!
+  conversationId: ID!
 }
 
 input ConversationUpdatedSubscriptionInput {
-  userId: ID!
+  conversationId: ID!
 }
 
 input UserTypingSubscriptionInput {
@@ -178,13 +188,28 @@ input UserTypingSubscriptionInput {
 }
 
 type TypingEvent {
-  writingBy: ID!
-  writingAt: Time!
+  # writingBy: ID!
+  # writingAt: Time!
+  user: User!
+  isTyping: Boolean!
+  conversationId: ID!
+  timestamp: Time!
+}
+
+type MessageStatusUpdatedEvent {
+  conversationId: ID!
+  messageId: ID!
+  status: MessageStatusEnum!
+}
+
+input MessageStatusUpdatedSubscriptionInput {
+  conversationId: ID!
 }
 
 extend type Subscription {
   # Listen for new messages in user's conversations
   messageAdded(input: MessageAddedSubscriptionInput!): Message!
+  messageStatusUpdated(input: MessageStatusUpdatedSubscriptionInput!): MessageStatusUpdatedEvent!
   # Listen for conversation updated (last message, unread counts, etc)
   conversationUpdated(input: ConversationUpdatedSubscriptionInput!): ConversationListItem!
   # Listen for typing indicators
