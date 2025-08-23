@@ -36,7 +36,7 @@ func (q *Queries) CreateConversation(ctx context.Context, type_ string) (Convers
 const findDirectConversation = `-- name: FindDirectConversation :one
 SELECT c.id, c.type, c.name, c.description, c.avatar_url, c.created_at, c.updated_at, c.last_message_at
 FROM conversations c
-WHERE c.type = 'direct'
+WHERE c.type = 'DIRECT'
     AND EXISTS (
         SELECT 1 FROM conversation_participants cp1
         WHERE cp1.conversation_id = c.id AND cp1.user_id = $1 AND cp1.is_active = true

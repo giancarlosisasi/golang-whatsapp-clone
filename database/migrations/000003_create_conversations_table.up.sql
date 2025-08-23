@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  -- must be direct or group
+  -- must be DIRECT or GROUP
   type VARCHAR(255) NOT NULL,
   name VARCHAR(255), -- For group conversations (null for direct conversations)
   description TEXT, -- for group conversations
