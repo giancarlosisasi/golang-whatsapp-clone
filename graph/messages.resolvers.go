@@ -38,7 +38,6 @@ func (r *conversationListItemDirectResolver) LastMessage(ctx context.Context, ob
 			UpdatedAt: lastMessage.SenderUpdatedAt.Time,
 		},
 	}, nil
-
 }
 
 // LastMessage is the resolver for the lastMessage field.
@@ -48,7 +47,28 @@ func (r *conversationListItemGroupResolver) LastMessage(ctx context.Context, obj
 
 // SendMessage is the resolver for the sendMessage field.
 func (r *mutationResolver) SendMessage(ctx context.Context, input model.SendMessageInput) (model.SendMessageResult, error) {
-	panic(fmt.Errorf("not implemented: SendMessage - sendMessage"))
+	_, graphqlError := r.mustGetAuthenticatedUser(ctx)
+	if graphqlError != nil {
+		return graphqlError, nil
+	}
+
+	_, err := r.MessageService.CreateMessage(
+		ctx,
+		input.ConversationID,
+		input.SenderID,
+		input.Content,
+		string(input.MessageType),
+		input.ReplyToMessageID,
+	)
+
+	if err != nil {
+		return model.ServerError{
+			ErrorMessage: "Error to send the message",
+			Code:         customerrors.CodeInternalError,
+		}, nil
+	}
+
+	return &model.SendMessageSuccess{Success: true}, nil
 }
 
 // MarkConversationAsRead is the resolver for the markConversationAsRead field.
@@ -73,8 +93,8 @@ func (r *mutationResolver) StartDirectConversation(ctx context.Context, input mo
 
 	if err != nil {
 		return model.ServerError{
-			Message: "Error to create the conversation",
-			Code:    customerrors.CodeInternalError,
+			ErrorMessage: "Error to create the conversation",
+			Code:         customerrors.CodeInternalError,
 		}, nil
 	}
 
@@ -108,8 +128,8 @@ func (r *queryResolver) MyConversations(ctx context.Context) (model.MyConversati
 	if err != nil {
 		if errors.Is(err, customerrors.ErrInvalidUUIDValue) {
 			return model.ServerError{
-				Message: "invalid user id",
-				Code:    customerrors.CodeInternalError,
+				ErrorMessage: "invalid user id",
+				Code:         customerrors.CodeInternalError,
 			}, nil
 		}
 	}
@@ -190,18 +210,3 @@ func (r *Resolver) ConversationListItemGroup() ConversationListItemGroupResolver
 
 type conversationListItemDirectResolver struct{ *Resolver }
 type conversationListItemGroupResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *conversationListItemDirectResolver) Participant(ctx context.Context, obj *model.ConversationListItemDirect) (*model.ConversationParticipant, error) {
-	panic(fmt.Errorf("not implemented: Participant - participant"))
-}
-func (r *conversationListItemGroupResolver) Participants(ctx context.Context, obj *model.ConversationListItemGroup) ([]*model.ConversationParticipant, error) {
-	panic(fmt.Errorf("not implemented: Participants - participants"))
-}
-*/

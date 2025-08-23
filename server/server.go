@@ -39,11 +39,13 @@ func NewServer() (*App, *http.Server, http.Handler) {
 	// repositories
 	conversationRepository := repository.NewConversationRepository(dbQueries, log)
 	participantRepository := repository.NewParticipantRepository(dbQueries, log)
+	messageRepository := repository.NewMessageRepository(dbQueries)
 
 	// services
 	jwtService := auth.NewJWTService(appConfig.JWTSecret)
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
 	conversationService := service.NewConversationService(conversationRepository, participantRepository)
+	messageService := service.NewMessageService(messageRepository)
 
 	handlers := handler.NewHandler(
 		log,
@@ -80,8 +82,9 @@ func NewServer() (*App, *http.Server, http.Handler) {
 	gqlResolver := &graph.Resolver{
 		DBQueries:           dbQueries,
 		AppConfig:           appConfig,
-		ConversationService: conversationService,
 		Logger:              log,
+		ConversationService: conversationService,
+		MessageService:      messageService,
 	}
 	graphqlHandler := handler.NewGraphqlHandler(log, gqlResolver)
 	graphqlPlaygroundHandler := handler.NewGraphqlPlaygroundHandler()

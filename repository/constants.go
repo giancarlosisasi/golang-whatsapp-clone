@@ -1,0 +1,7 @@
+package repository
+
+var (
+	MESSAGE_TYPE_TEXT  = "TEXT"
+	MESSAGE_TYPE_IMAGE = "IMAGE"
+	MESSAGE_TYPE_FILE  = "FILE"
+)

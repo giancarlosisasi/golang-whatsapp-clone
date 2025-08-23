@@ -20,16 +20,17 @@ import (
 type Resolver struct {
 	DBQueries           *db.Queries
 	AppConfig           *config.AppConfig
-	ConversationService *service.ConversationService
 	Logger              *zerolog.Logger
+	ConversationService *service.ConversationService
+	MessageService      *service.MessageService
 }
 
 func (r *Resolver) mustGetAuthenticatedUser(ctx context.Context) (*auth.UserContext, *model.UnauthorizedError) {
 	user := auth.GetUserFromContext(ctx)
 	if user == nil {
 		return nil, &model.UnauthorizedError{
-			Message: "You must be authenticated to access to this data",
-			Code:    "UNAUTHORIZED",
+			ErrorMessage: "You must be authenticated to access to this data",
+			Code:         "UNAUTHORIZED",
 		}
 	}
 

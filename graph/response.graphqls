@@ -1,7 +1,7 @@
 # standard response types
 interface Error {
   code: String!
-  message: String!
+  errorMessage: String!
 }
 
 interface Success {
@@ -9,26 +9,26 @@ interface Success {
 }
 
 type ValidationError implements Error {
-  message: String!
+  errorMessage: String!
   code: String!
 }
 
 type ServerError implements Error {
-  message: String!
+  errorMessage: String!
   code: String!
 }
 
 type NotFoundError implements Error {
-  message: String!
+  errorMessage: String!
   code: String!
 }
 
 type ForbiddenError implements Error {
-  message: String!
+  errorMessage: String!
   code: String!
 }
 
 type UnauthorizedError implements Error {
-  message: String!
+  errorMessage: String!
   code: String!
 }

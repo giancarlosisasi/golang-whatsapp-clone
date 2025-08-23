@@ -104,8 +104,8 @@ type ComplexityRoot struct {
 	}
 
 	ForbiddenError struct {
-		Code    func(childComplexity int) int
-		Message func(childComplexity int) int
+		Code         func(childComplexity int) int
+		ErrorMessage func(childComplexity int) int
 	}
 
 	GetOrCreateDirectConversationSuccess struct {
@@ -142,8 +142,8 @@ type ComplexityRoot struct {
 	}
 
 	NotFoundError struct {
-		Code    func(childComplexity int) int
-		Message func(childComplexity int) int
+		Code         func(childComplexity int) int
+		ErrorMessage func(childComplexity int) int
 	}
 
 	Query struct {
@@ -155,13 +155,12 @@ type ComplexityRoot struct {
 	}
 
 	SendMessageSuccess struct {
-		Message func(childComplexity int) int
 		Success func(childComplexity int) int
 	}
 
 	ServerError struct {
-		Code    func(childComplexity int) int
-		Message func(childComplexity int) int
+		Code         func(childComplexity int) int
+		ErrorMessage func(childComplexity int) int
 	}
 
 	StartDirectConversationSuccess struct {
@@ -183,8 +182,8 @@ type ComplexityRoot struct {
 	}
 
 	UnauthorizedError struct {
-		Code    func(childComplexity int) int
-		Message func(childComplexity int) int
+		Code         func(childComplexity int) int
+		ErrorMessage func(childComplexity int) int
 	}
 
 	User struct {
@@ -197,8 +196,8 @@ type ComplexityRoot struct {
 	}
 
 	ValidationError struct {
-		Code    func(childComplexity int) int
-		Message func(childComplexity int) int
+		Code         func(childComplexity int) int
+		ErrorMessage func(childComplexity int) int
 	}
 }
 
@@ -466,12 +465,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ForbiddenError.Code(childComplexity), true
 
-	case "ForbiddenError.message":
-		if e.complexity.ForbiddenError.Message == nil {
+	case "ForbiddenError.errorMessage":
+		if e.complexity.ForbiddenError.ErrorMessage == nil {
 			break
 		}
 
-		return e.complexity.ForbiddenError.Message(childComplexity), true
+		return e.complexity.ForbiddenError.ErrorMessage(childComplexity), true
 
 	case "GetOrCreateDirectConversationSuccess.conversation":
 		if e.complexity.GetOrCreateDirectConversationSuccess.Conversation == nil {
@@ -626,12 +625,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.NotFoundError.Code(childComplexity), true
 
-	case "NotFoundError.message":
-		if e.complexity.NotFoundError.Message == nil {
+	case "NotFoundError.errorMessage":
+		if e.complexity.NotFoundError.ErrorMessage == nil {
 			break
 		}
 
-		return e.complexity.NotFoundError.Message(childComplexity), true
+		return e.complexity.NotFoundError.ErrorMessage(childComplexity), true
 
 	case "Query.conversationMessages":
 		if e.complexity.Query.ConversationMessages == nil {
@@ -678,13 +677,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.MyConversations(childComplexity), true
 
-	case "SendMessageSuccess.message":
-		if e.complexity.SendMessageSuccess.Message == nil {
-			break
-		}
-
-		return e.complexity.SendMessageSuccess.Message(childComplexity), true
-
 	case "SendMessageSuccess.success":
 		if e.complexity.SendMessageSuccess.Success == nil {
 			break
@@ -699,12 +691,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ServerError.Code(childComplexity), true
 
-	case "ServerError.message":
-		if e.complexity.ServerError.Message == nil {
+	case "ServerError.errorMessage":
+		if e.complexity.ServerError.ErrorMessage == nil {
 			break
 		}
 
-		return e.complexity.ServerError.Message(childComplexity), true
+		return e.complexity.ServerError.ErrorMessage(childComplexity), true
 
 	case "StartDirectConversationSuccess.conversation":
 		if e.complexity.StartDirectConversationSuccess.Conversation == nil {
@@ -791,12 +783,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.UnauthorizedError.Code(childComplexity), true
 
-	case "UnauthorizedError.message":
-		if e.complexity.UnauthorizedError.Message == nil {
+	case "UnauthorizedError.errorMessage":
+		if e.complexity.UnauthorizedError.ErrorMessage == nil {
 			break
 		}
 
-		return e.complexity.UnauthorizedError.Message(childComplexity), true
+		return e.complexity.UnauthorizedError.ErrorMessage(childComplexity), true
 
 	case "User.avatarUrl":
 		if e.complexity.User.AvatarURL == nil {
@@ -847,12 +839,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ValidationError.Code(childComplexity), true
 
-	case "ValidationError.message":
-		if e.complexity.ValidationError.Message == nil {
+	case "ValidationError.errorMessage":
+		if e.complexity.ValidationError.ErrorMessage == nil {
 			break
 		}
 
-		return e.complexity.ValidationError.Message(childComplexity), true
+		return e.complexity.ValidationError.ErrorMessage(childComplexity), true
 
 	}
 	return 0, false
@@ -2551,8 +2543,8 @@ func (ec *executionContext) fieldContext_EditMessageSuccess_message(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _ForbiddenError_message(ctx context.Context, field graphql.CollectedField, obj *model.ForbiddenError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ForbiddenError_message(ctx, field)
+func (ec *executionContext) _ForbiddenError_errorMessage(ctx context.Context, field graphql.CollectedField, obj *model.ForbiddenError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ForbiddenError_errorMessage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2565,7 +2557,7 @@ func (ec *executionContext) _ForbiddenError_message(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.ErrorMessage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2582,7 +2574,7 @@ func (ec *executionContext) _ForbiddenError_message(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ForbiddenError_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ForbiddenError_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ForbiddenError",
 		Field:      field,
@@ -3512,8 +3504,8 @@ func (ec *executionContext) fieldContext_MyConversationsQuerySuccess_conversatio
 	return fc, nil
 }
 
-func (ec *executionContext) _NotFoundError_message(ctx context.Context, field graphql.CollectedField, obj *model.NotFoundError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_NotFoundError_message(ctx, field)
+func (ec *executionContext) _NotFoundError_errorMessage(ctx context.Context, field graphql.CollectedField, obj *model.NotFoundError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NotFoundError_errorMessage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3526,7 +3518,7 @@ func (ec *executionContext) _NotFoundError_message(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.ErrorMessage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3543,7 +3535,7 @@ func (ec *executionContext) _NotFoundError_message(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_NotFoundError_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NotFoundError_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NotFoundError",
 		Field:      field,
@@ -4025,8 +4017,8 @@ func (ec *executionContext) fieldContext_SendMessageSuccess_success(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _SendMessageSuccess_message(ctx context.Context, field graphql.CollectedField, obj *model.SendMessageSuccess) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SendMessageSuccess_message(ctx, field)
+func (ec *executionContext) _ServerError_errorMessage(ctx context.Context, field graphql.CollectedField, obj *model.ServerError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ServerError_errorMessage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4039,67 +4031,7 @@ func (ec *executionContext) _SendMessageSuccess_message(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Message)
-	fc.Result = res
-	return ec.marshalNMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SendMessageSuccess_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SendMessageSuccess",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Message_id(ctx, field)
-			case "sender":
-				return ec.fieldContext_Message_sender(ctx, field)
-			case "content":
-				return ec.fieldContext_Message_content(ctx, field)
-			case "messageType":
-				return ec.fieldContext_Message_messageType(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Message_createdAt(ctx, field)
-			case "editedAt":
-				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ServerError_message(ctx context.Context, field graphql.CollectedField, obj *model.ServerError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ServerError_message(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.ErrorMessage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4116,7 +4048,7 @@ func (ec *executionContext) _ServerError_message(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ServerError_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ServerError_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ServerError",
 		Field:      field,
@@ -4713,8 +4645,8 @@ func (ec *executionContext) fieldContext_TypingEvent_writingAt(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _UnauthorizedError_message(ctx context.Context, field graphql.CollectedField, obj *model.UnauthorizedError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UnauthorizedError_message(ctx, field)
+func (ec *executionContext) _UnauthorizedError_errorMessage(ctx context.Context, field graphql.CollectedField, obj *model.UnauthorizedError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UnauthorizedError_errorMessage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4727,7 +4659,7 @@ func (ec *executionContext) _UnauthorizedError_message(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.ErrorMessage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4744,7 +4676,7 @@ func (ec *executionContext) _UnauthorizedError_message(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_UnauthorizedError_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_UnauthorizedError_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UnauthorizedError",
 		Field:      field,
@@ -5059,8 +4991,8 @@ func (ec *executionContext) fieldContext_User_updatedAt(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _ValidationError_message(ctx context.Context, field graphql.CollectedField, obj *model.ValidationError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ValidationError_message(ctx, field)
+func (ec *executionContext) _ValidationError_errorMessage(ctx context.Context, field graphql.CollectedField, obj *model.ValidationError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ValidationError_errorMessage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5073,7 +5005,7 @@ func (ec *executionContext) _ValidationError_message(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
+		return obj.ErrorMessage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5090,7 +5022,7 @@ func (ec *executionContext) _ValidationError_message(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ValidationError_message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ValidationError_errorMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ValidationError",
 		Field:      field,
@@ -7315,7 +7247,7 @@ func (ec *executionContext) unmarshalInputSendMessageInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"conversationId", "content", "messageType", "replyToMessageId"}
+	fieldsInOrder := [...]string{"conversationId", "senderID", "content", "messageType", "replyToMessageId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7329,6 +7261,13 @@ func (ec *executionContext) unmarshalInputSendMessageInput(ctx context.Context, 
 				return it, err
 			}
 			it.ConversationID = data
+		case "senderID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("senderID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SenderID = data
 		case "content":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -8238,8 +8177,8 @@ func (ec *executionContext) _ForbiddenError(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ForbiddenError")
-		case "message":
-			out.Values[i] = ec._ForbiddenError_message(ctx, field, obj)
+		case "errorMessage":
+			out.Values[i] = ec._ForbiddenError_errorMessage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8551,8 +8490,8 @@ func (ec *executionContext) _NotFoundError(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("NotFoundError")
-		case "message":
-			out.Values[i] = ec._NotFoundError_message(ctx, field, obj)
+		case "errorMessage":
+			out.Values[i] = ec._NotFoundError_errorMessage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8754,11 +8693,6 @@ func (ec *executionContext) _SendMessageSuccess(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "message":
-			out.Values[i] = ec._SendMessageSuccess_message(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8793,8 +8727,8 @@ func (ec *executionContext) _ServerError(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ServerError")
-		case "message":
-			out.Values[i] = ec._ServerError_message(ctx, field, obj)
+		case "errorMessage":
+			out.Values[i] = ec._ServerError_errorMessage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8953,8 +8887,8 @@ func (ec *executionContext) _UnauthorizedError(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("UnauthorizedError")
-		case "message":
-			out.Values[i] = ec._UnauthorizedError_message(ctx, field, obj)
+		case "errorMessage":
+			out.Values[i] = ec._UnauthorizedError_errorMessage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -9055,8 +8989,8 @@ func (ec *executionContext) _ValidationError(ctx context.Context, sel ast.Select
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ValidationError")
-		case "message":
-			out.Values[i] = ec._ValidationError_message(ctx, field, obj)
+		case "errorMessage":
+			out.Values[i] = ec._ValidationError_errorMessage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -16,9 +16,10 @@ INSERT INTO messages (
     conversation_id,
     sender_id,
     content,
+    message_type,
     reply_to_message_id
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING id, conversation_id, sender_id, content, message_type, reply_to_message_id, media_url, media_filename, media_size, media_mime_type, location_latitude, location_longitude, location_address, is_deleted, created_at, edited_at, deleted_at
 `
 
@@ -26,6 +27,7 @@ type CreateMessageParams struct {
 	ConversationID   pgtype.UUID
 	SenderID         pgtype.UUID
 	Content          string
+	MessageType      string
 	ReplyToMessageID pgtype.UUID
 }
 
@@ -34,6 +36,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		arg.ConversationID,
 		arg.SenderID,
 		arg.Content,
+		arg.MessageType,
 		arg.ReplyToMessageID,
 	)
 	var i Message

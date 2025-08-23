@@ -25,7 +25,7 @@ type EditMessageResult interface {
 type Error interface {
 	IsError()
 	GetCode() string
-	GetMessage() string
+	GetErrorMessage() string
 }
 
 type GetOrCreateDirectConversationResult interface {
@@ -133,13 +133,13 @@ func (this EditMessageSuccess) GetSuccess() bool { return this.Success }
 func (EditMessageSuccess) IsEditMessageResult() {}
 
 type ForbiddenError struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
+	ErrorMessage string `json:"errorMessage"`
+	Code         string `json:"code"`
 }
 
-func (ForbiddenError) IsError()                {}
-func (this ForbiddenError) GetCode() string    { return this.Code }
-func (this ForbiddenError) GetMessage() string { return this.Message }
+func (ForbiddenError) IsError()                     {}
+func (this ForbiddenError) GetCode() string         { return this.Code }
+func (this ForbiddenError) GetErrorMessage() string { return this.ErrorMessage }
 
 type GetOrCreateDirectConversationInput struct {
 	UserID string `json:"userId"`
@@ -197,8 +197,8 @@ func (this MyConversationsQuerySuccess) GetSuccess() bool { return this.Success 
 func (MyConversationsQuerySuccess) IsMyConversationsQueryResult() {}
 
 type NotFoundError struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
+	ErrorMessage string `json:"errorMessage"`
+	Code         string `json:"code"`
 }
 
 func (NotFoundError) IsConversationMessagesQueryResult() {}
@@ -213,9 +213,9 @@ func (NotFoundError) IsEditMessageResult() {}
 
 func (NotFoundError) IsStartDirectConversationResult() {}
 
-func (NotFoundError) IsError()                {}
-func (this NotFoundError) GetCode() string    { return this.Code }
-func (this NotFoundError) GetMessage() string { return this.Message }
+func (NotFoundError) IsError()                     {}
+func (this NotFoundError) GetCode() string         { return this.Code }
+func (this NotFoundError) GetErrorMessage() string { return this.ErrorMessage }
 
 type Pagination struct {
 	Offset int32 `json:"offset"`
@@ -227,14 +227,14 @@ type Query struct {
 
 type SendMessageInput struct {
 	ConversationID   string          `json:"conversationId"`
+	SenderID         string          `json:"senderID"`
 	Content          string          `json:"content"`
 	MessageType      MessageTypeEnum `json:"messageType"`
 	ReplyToMessageID *string         `json:"replyToMessageId,omitempty"`
 }
 
 type SendMessageSuccess struct {
-	Success bool     `json:"success"`
-	Message *Message `json:"message"`
+	Success bool `json:"success"`
 }
 
 func (SendMessageSuccess) IsSuccess()            {}
@@ -243,8 +243,8 @@ func (this SendMessageSuccess) GetSuccess() bool { return this.Success }
 func (SendMessageSuccess) IsSendMessageResult() {}
 
 type ServerError struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
+	ErrorMessage string `json:"errorMessage"`
+	Code         string `json:"code"`
 }
 
 func (ServerError) IsMyConversationsQueryResult() {}
@@ -261,9 +261,9 @@ func (ServerError) IsEditMessageResult() {}
 
 func (ServerError) IsStartDirectConversationResult() {}
 
-func (ServerError) IsError()                {}
-func (this ServerError) GetCode() string    { return this.Code }
-func (this ServerError) GetMessage() string { return this.Message }
+func (ServerError) IsError()                     {}
+func (this ServerError) GetCode() string         { return this.Code }
+func (this ServerError) GetErrorMessage() string { return this.ErrorMessage }
 
 type StartDirectConversationInput struct {
 	ParticipantID string `json:"participantId"`
@@ -288,8 +288,8 @@ type TypingEvent struct {
 }
 
 type UnauthorizedError struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
+	ErrorMessage string `json:"errorMessage"`
+	Code         string `json:"code"`
 }
 
 func (UnauthorizedError) IsMyConversationsQueryResult() {}
@@ -306,9 +306,9 @@ func (UnauthorizedError) IsEditMessageResult() {}
 
 func (UnauthorizedError) IsStartDirectConversationResult() {}
 
-func (UnauthorizedError) IsError()                {}
-func (this UnauthorizedError) GetCode() string    { return this.Code }
-func (this UnauthorizedError) GetMessage() string { return this.Message }
+func (UnauthorizedError) IsError()                     {}
+func (this UnauthorizedError) GetCode() string         { return this.Code }
+func (this UnauthorizedError) GetErrorMessage() string { return this.ErrorMessage }
 
 type User struct {
 	ID        string    `json:"id"`
@@ -324,13 +324,13 @@ type UserTypingSubscriptionInput struct {
 }
 
 type ValidationError struct {
-	Message string `json:"message"`
-	Code    string `json:"code"`
+	ErrorMessage string `json:"errorMessage"`
+	Code         string `json:"code"`
 }
 
-func (ValidationError) IsError()                {}
-func (this ValidationError) GetCode() string    { return this.Code }
-func (this ValidationError) GetMessage() string { return this.Message }
+func (ValidationError) IsError()                     {}
+func (this ValidationError) GetCode() string         { return this.Code }
+func (this ValidationError) GetErrorMessage() string { return this.ErrorMessage }
 
 type ConversationTypeEnum string
 

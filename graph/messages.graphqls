@@ -99,6 +99,7 @@ extend type Query {
 
 input SendMessageInput {
   conversationId: ID!
+  senderID: ID!
   content: String!
   messageType: MessageTypeEnum!
   replyToMessageId: ID
@@ -115,7 +116,8 @@ input EditMessageInput {
 
 type SendMessageSuccess implements Success {
   success: Boolean!
-  message: Message!
+  # we don't return the message here because it's not needed for the client
+  # message: Message!
 }
 
 union SendMessageResult = SendMessageSuccess | ServerError | UnauthorizedError | NotFoundError
