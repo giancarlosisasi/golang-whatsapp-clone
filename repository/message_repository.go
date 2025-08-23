@@ -49,6 +49,7 @@ func (r *MessagePostgresRepository) CreateMessage(ctx context.Context, conversat
 		Content:          content,
 		MessageType:      messageType,
 		ReplyToMessageID: rui,
+		Status:           MESSAGE_STATUS_SENT,
 	})
 
 	if err != nil {

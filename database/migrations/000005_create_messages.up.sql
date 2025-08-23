@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS messages (
   -- default must be text, but we will also support image, audio, video, etc
   -- the restriction will be done in the code go side
   message_type VARCHAR(255) NOT NULL,
+  -- must be SENT, DELIVERED, READ, FAILED
+  status VARCHAR(255) NOT NULL,
   reply_to_message_id UUID REFERENCES messages(id) ON DELETE CASCADE,
   media_url VARCHAR(500), -- for file/image/audio/video messages
   media_filename VARCHAR(255), -- original filename for files
@@ -17,7 +19,9 @@ CREATE TABLE IF NOT EXISTS messages (
   is_deleted BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   edited_at TIMESTAMP WITH TIME ZONE,
-  deleted_at TIMESTAMP WITH TIME ZONE
+  deleted_at TIMESTAMP WITH TIME ZONE,
+  delivered_at TIMESTAMP WITH TIME ZONE,
+  read_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);

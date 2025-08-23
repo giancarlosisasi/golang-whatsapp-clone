@@ -29,6 +29,9 @@ func (r *conversationListItemDirectResolver) LastMessage(ctx context.Context, ob
 		MessageType: model.MessageTypeEnum(lastMessage.MessageType),
 		CreatedAt:   lastMessage.CreatedAt.Time,
 		EditedAt:    &lastMessage.EditedAt.Time,
+		Status:      model.MessageStatusEnum(lastMessage.Status),
+		DeliveredAt: &lastMessage.DeliveredAt.Time,
+		ReadAt:      &lastMessage.CreatedAt.Time,
 		Sender: &model.User{
 			ID:        lastMessage.SenderID.String(),
 			Name:      &lastMessage.SenderName.String,
@@ -215,6 +218,9 @@ func (r *queryResolver) ConversationMessages(ctx context.Context, input model.Co
 			MessageType:    model.MessageTypeEnum(value.MessageType),
 			CreatedAt:      value.CreatedAt.Time,
 			EditedAt:       &value.EditedAt.Time,
+			Status:         model.MessageStatusEnum(value.Status),
+			ReadAt:         &value.ReadAt.Time,
+			DeliveredAt:    &value.DeletedAt.Time,
 			ReplyToMessage: replyMessage,
 			Sender: &model.User{
 				ID:        value.SenderID.String(),

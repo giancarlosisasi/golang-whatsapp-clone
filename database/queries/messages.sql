@@ -4,9 +4,10 @@ INSERT INTO messages (
     sender_id,
     content,
     message_type,
-    reply_to_message_id
+    reply_to_message_id,
+    status
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
 -- name: GetConversationMessages :many

@@ -121,11 +121,14 @@ type ComplexityRoot struct {
 	Message struct {
 		Content        func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
+		DeliveredAt    func(childComplexity int) int
 		EditedAt       func(childComplexity int) int
 		ID             func(childComplexity int) int
 		MessageType    func(childComplexity int) int
+		ReadAt         func(childComplexity int) int
 		ReplyToMessage func(childComplexity int) int
 		Sender         func(childComplexity int) int
+		Status         func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -184,8 +187,10 @@ type ComplexityRoot struct {
 	}
 
 	TypingEvent struct {
-		WritingAt func(childComplexity int) int
-		WritingBy func(childComplexity int) int
+		ConversationID func(childComplexity int) int
+		IsTyping       func(childComplexity int) int
+		Timestamp      func(childComplexity int) int
+		User           func(childComplexity int) int
 	}
 
 	UnauthorizedError struct {
@@ -521,6 +526,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Message.CreatedAt(childComplexity), true
 
+	case "Message.deliveredAt":
+		if e.complexity.Message.DeliveredAt == nil {
+			break
+		}
+
+		return e.complexity.Message.DeliveredAt(childComplexity), true
+
 	case "Message.editedAt":
 		if e.complexity.Message.EditedAt == nil {
 			break
@@ -542,6 +554,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Message.MessageType(childComplexity), true
 
+	case "Message.readAt":
+		if e.complexity.Message.ReadAt == nil {
+			break
+		}
+
+		return e.complexity.Message.ReadAt(childComplexity), true
+
 	case "Message.replyToMessage":
 		if e.complexity.Message.ReplyToMessage == nil {
 			break
@@ -555,6 +574,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Message.Sender(childComplexity), true
+
+	case "Message.status":
+		if e.complexity.Message.Status == nil {
+			break
+		}
+
+		return e.complexity.Message.Status(childComplexity), true
 
 	case "Mutation.editMessage":
 		if e.complexity.Mutation.EditMessage == nil {
@@ -797,19 +823,33 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Subscription.UserTyping(childComplexity, args["input"].(model.UserTypingSubscriptionInput)), true
 
-	case "TypingEvent.writingAt":
-		if e.complexity.TypingEvent.WritingAt == nil {
+	case "TypingEvent.conversationId":
+		if e.complexity.TypingEvent.ConversationID == nil {
 			break
 		}
 
-		return e.complexity.TypingEvent.WritingAt(childComplexity), true
+		return e.complexity.TypingEvent.ConversationID(childComplexity), true
 
-	case "TypingEvent.writingBy":
-		if e.complexity.TypingEvent.WritingBy == nil {
+	case "TypingEvent.isTyping":
+		if e.complexity.TypingEvent.IsTyping == nil {
 			break
 		}
 
-		return e.complexity.TypingEvent.WritingBy(childComplexity), true
+		return e.complexity.TypingEvent.IsTyping(childComplexity), true
+
+	case "TypingEvent.timestamp":
+		if e.complexity.TypingEvent.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.TypingEvent.Timestamp(childComplexity), true
+
+	case "TypingEvent.user":
+		if e.complexity.TypingEvent.User == nil {
+			break
+		}
+
+		return e.complexity.TypingEvent.User(childComplexity), true
 
 	case "UnauthorizedError.code":
 		if e.complexity.UnauthorizedError.Code == nil {
@@ -1717,12 +1757,18 @@ func (ec *executionContext) fieldContext_ConversationListItemDirect_lastMessage(
 				return ec.fieldContext_Message_content(ctx, field)
 			case "messageType":
 				return ec.fieldContext_Message_messageType(ctx, field)
+			case "status":
+				return ec.fieldContext_Message_status(ctx, field)
+			case "replyToMessage":
+				return ec.fieldContext_Message_replyToMessage(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Message_createdAt(ctx, field)
 			case "editedAt":
 				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+			case "deliveredAt":
+				return ec.fieldContext_Message_deliveredAt(ctx, field)
+			case "readAt":
+				return ec.fieldContext_Message_readAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -1994,12 +2040,18 @@ func (ec *executionContext) fieldContext_ConversationListItemGroup_lastMessage(_
 				return ec.fieldContext_Message_content(ctx, field)
 			case "messageType":
 				return ec.fieldContext_Message_messageType(ctx, field)
+			case "status":
+				return ec.fieldContext_Message_status(ctx, field)
+			case "replyToMessage":
+				return ec.fieldContext_Message_replyToMessage(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Message_createdAt(ctx, field)
 			case "editedAt":
 				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+			case "deliveredAt":
+				return ec.fieldContext_Message_deliveredAt(ctx, field)
+			case "readAt":
+				return ec.fieldContext_Message_readAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -2230,12 +2282,18 @@ func (ec *executionContext) fieldContext_ConversationMessagesQuerySuccess_messag
 				return ec.fieldContext_Message_content(ctx, field)
 			case "messageType":
 				return ec.fieldContext_Message_messageType(ctx, field)
+			case "status":
+				return ec.fieldContext_Message_status(ctx, field)
+			case "replyToMessage":
+				return ec.fieldContext_Message_replyToMessage(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Message_createdAt(ctx, field)
 			case "editedAt":
 				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+			case "deliveredAt":
+				return ec.fieldContext_Message_deliveredAt(ctx, field)
+			case "readAt":
+				return ec.fieldContext_Message_readAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -2565,12 +2623,18 @@ func (ec *executionContext) fieldContext_EditMessageSuccess_message(_ context.Co
 				return ec.fieldContext_Message_content(ctx, field)
 			case "messageType":
 				return ec.fieldContext_Message_messageType(ctx, field)
+			case "status":
+				return ec.fieldContext_Message_status(ctx, field)
+			case "replyToMessage":
+				return ec.fieldContext_Message_replyToMessage(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Message_createdAt(ctx, field)
 			case "editedAt":
 				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+			case "deliveredAt":
+				return ec.fieldContext_Message_deliveredAt(ctx, field)
+			case "readAt":
+				return ec.fieldContext_Message_readAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -3048,6 +3112,101 @@ func (ec *executionContext) fieldContext_Message_messageType(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Message_status(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.MessageStatusEnum)
+	fc.Result = res
+	return ec.marshalNMessageStatusEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Message_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageStatusEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Message_replyToMessage(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_replyToMessage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReplyToMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ReplyMessage)
+	fc.Result = res
+	return ec.marshalOReplyMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐReplyMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Message_replyToMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ReplyMessage_id(ctx, field)
+			case "senderName":
+				return ec.fieldContext_ReplyMessage_senderName(ctx, field)
+			case "content":
+				return ec.fieldContext_ReplyMessage_content(ctx, field)
+			case "messageType":
+				return ec.fieldContext_ReplyMessage_messageType(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ReplyMessage", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Message_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Message_createdAt(ctx, field)
 	if err != nil {
@@ -3133,8 +3292,8 @@ func (ec *executionContext) fieldContext_Message_editedAt(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Message_replyToMessage(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Message_replyToMessage(ctx, field)
+func (ec *executionContext) _Message_deliveredAt(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_deliveredAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3147,7 +3306,7 @@ func (ec *executionContext) _Message_replyToMessage(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ReplyToMessage, nil
+		return obj.DeliveredAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3156,29 +3315,60 @@ func (ec *executionContext) _Message_replyToMessage(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.ReplyMessage)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalOReplyMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐReplyMessage(ctx, field.Selections, res)
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Message_replyToMessage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Message_deliveredAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Message",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_ReplyMessage_id(ctx, field)
-			case "senderName":
-				return ec.fieldContext_ReplyMessage_senderName(ctx, field)
-			case "content":
-				return ec.fieldContext_ReplyMessage_content(ctx, field)
-			case "messageType":
-				return ec.fieldContext_ReplyMessage_messageType(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ReplyMessage", field.Name)
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Message_readAt(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_readAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReadAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Message_readAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4594,12 +4784,18 @@ func (ec *executionContext) fieldContext_Subscription_messageAdded(ctx context.C
 				return ec.fieldContext_Message_content(ctx, field)
 			case "messageType":
 				return ec.fieldContext_Message_messageType(ctx, field)
+			case "status":
+				return ec.fieldContext_Message_status(ctx, field)
+			case "replyToMessage":
+				return ec.fieldContext_Message_replyToMessage(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Message_createdAt(ctx, field)
 			case "editedAt":
 				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
+			case "deliveredAt":
+				return ec.fieldContext_Message_deliveredAt(ctx, field)
+			case "readAt":
+				return ec.fieldContext_Message_readAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
@@ -4740,10 +4936,14 @@ func (ec *executionContext) fieldContext_Subscription_userTyping(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "writingBy":
-				return ec.fieldContext_TypingEvent_writingBy(ctx, field)
-			case "writingAt":
-				return ec.fieldContext_TypingEvent_writingAt(ctx, field)
+			case "user":
+				return ec.fieldContext_TypingEvent_user(ctx, field)
+			case "isTyping":
+				return ec.fieldContext_TypingEvent_isTyping(ctx, field)
+			case "conversationId":
+				return ec.fieldContext_TypingEvent_conversationId(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_TypingEvent_timestamp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TypingEvent", field.Name)
 		},
@@ -4762,8 +4962,8 @@ func (ec *executionContext) fieldContext_Subscription_userTyping(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _TypingEvent_writingBy(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TypingEvent_writingBy(ctx, field)
+func (ec *executionContext) _TypingEvent_user(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TypingEvent_user(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4776,7 +4976,109 @@ func (ec *executionContext) _TypingEvent_writingBy(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.WritingBy, nil
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TypingEvent_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TypingEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "avatarUrl":
+				return ec.fieldContext_User_avatarUrl(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TypingEvent_isTyping(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TypingEvent_isTyping(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsTyping, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TypingEvent_isTyping(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TypingEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TypingEvent_conversationId(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TypingEvent_conversationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ConversationID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4793,7 +5095,7 @@ func (ec *executionContext) _TypingEvent_writingBy(ctx context.Context, field gr
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TypingEvent_writingBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TypingEvent_conversationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TypingEvent",
 		Field:      field,
@@ -4806,8 +5108,8 @@ func (ec *executionContext) fieldContext_TypingEvent_writingBy(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _TypingEvent_writingAt(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TypingEvent_writingAt(ctx, field)
+func (ec *executionContext) _TypingEvent_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.TypingEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TypingEvent_timestamp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4820,7 +5122,7 @@ func (ec *executionContext) _TypingEvent_writingAt(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.WritingAt, nil
+		return obj.Timestamp, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4837,7 +5139,7 @@ func (ec *executionContext) _TypingEvent_writingAt(ctx context.Context, field gr
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TypingEvent_writingAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TypingEvent_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TypingEvent",
 		Field:      field,
@@ -7276,20 +7578,20 @@ func (ec *executionContext) unmarshalInputConversationUpdatedSubscriptionInput(c
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userId"}
+	fieldsInOrder := [...]string{"conversationId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "userId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		case "conversationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conversationId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.UserID = data
+			it.ConversationID = data
 		}
 	}
 
@@ -7391,20 +7693,20 @@ func (ec *executionContext) unmarshalInputMessageAddedSubscriptionInput(ctx cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userId"}
+	fieldsInOrder := [...]string{"conversationId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "userId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		case "conversationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conversationId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.UserID = data
+			it.ConversationID = data
 		}
 	}
 
@@ -8534,6 +8836,13 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "status":
+			out.Values[i] = ec._Message_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "replyToMessage":
+			out.Values[i] = ec._Message_replyToMessage(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Message_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -8541,8 +8850,10 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "editedAt":
 			out.Values[i] = ec._Message_editedAt(ctx, field, obj)
-		case "replyToMessage":
-			out.Values[i] = ec._Message_replyToMessage(ctx, field, obj)
+		case "deliveredAt":
+			out.Values[i] = ec._Message_deliveredAt(ctx, field, obj)
+		case "readAt":
+			out.Values[i] = ec._Message_readAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9102,13 +9413,23 @@ func (ec *executionContext) _TypingEvent(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TypingEvent")
-		case "writingBy":
-			out.Values[i] = ec._TypingEvent_writingBy(ctx, field, obj)
+		case "user":
+			out.Values[i] = ec._TypingEvent_user(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "writingAt":
-			out.Values[i] = ec._TypingEvent_writingAt(ctx, field, obj)
+		case "isTyping":
+			out.Values[i] = ec._TypingEvent_isTyping(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "conversationId":
+			out.Values[i] = ec._TypingEvent_conversationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "timestamp":
+			out.Values[i] = ec._TypingEvent_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -9878,6 +10199,16 @@ func (ec *executionContext) marshalNMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraph
 func (ec *executionContext) unmarshalNMessageAddedSubscriptionInput2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedSubscriptionInput(ctx context.Context, v any) (model.MessageAddedSubscriptionInput, error) {
 	res, err := ec.unmarshalInputMessageAddedSubscriptionInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNMessageStatusEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusEnum(ctx context.Context, v any) (model.MessageStatusEnum, error) {
+	var res model.MessageStatusEnum
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMessageStatusEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusEnum(ctx context.Context, sel ast.SelectionSet, v model.MessageStatusEnum) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNMessageTypeEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageTypeEnum(ctx context.Context, v any) (model.MessageTypeEnum, error) {

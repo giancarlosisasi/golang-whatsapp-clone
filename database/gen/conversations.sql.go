@@ -81,9 +81,12 @@ WITH ranked_messages AS (
         m.sender_id,
         m.content,
         m.message_type,
+        m.reply_to_message_id,
+        m.status,
         m.created_at,
         m.edited_at,
-        m.reply_to_message_id,
+        m.delivered_at,
+        m.read_at,
         sender.name as sender_name,
         sender.avatar_url as sender_avatar_url,
         sender.email as sender_email,
@@ -100,9 +103,12 @@ SELECT
     sender_id,
     content,
     message_type,
-    created_at,
     edited_at,
+    status,
     reply_to_message_id,
+    created_at,
+    delivered_at,
+    read_at,
     sender_name,
     sender_avatar_url,
     sender_email,
@@ -119,9 +125,12 @@ type GetLastMessageRow struct {
 	SenderID         pgtype.UUID
 	Content          string
 	MessageType      string
-	CreatedAt        pgtype.Timestamptz
 	EditedAt         pgtype.Timestamptz
+	Status           string
 	ReplyToMessageID pgtype.UUID
+	CreatedAt        pgtype.Timestamptz
+	DeliveredAt      pgtype.Timestamptz
+	ReadAt           pgtype.Timestamptz
 	SenderName       pgtype.Text
 	SenderAvatarUrl  pgtype.Text
 	SenderEmail      string
@@ -164,9 +173,12 @@ func (q *Queries) GetLastMessage(ctx context.Context, dollar_1 []pgtype.UUID) ([
 			&i.SenderID,
 			&i.Content,
 			&i.MessageType,
-			&i.CreatedAt,
 			&i.EditedAt,
+			&i.Status,
 			&i.ReplyToMessageID,
+			&i.CreatedAt,
+			&i.DeliveredAt,
+			&i.ReadAt,
 			&i.SenderName,
 			&i.SenderAvatarUrl,
 			&i.SenderEmail,

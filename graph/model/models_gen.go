@@ -114,7 +114,7 @@ type ConversationParticipant struct {
 }
 
 type ConversationUpdatedSubscriptionInput struct {
-	UserID string `json:"userId"`
+	ConversationID string `json:"conversationId"`
 }
 
 type EditMessageInput struct {
@@ -170,17 +170,20 @@ func (this MarkConversationAsReadSuccess) GetSuccess() bool { return this.Succes
 func (MarkConversationAsReadSuccess) IsMarkConversationAsReadResult() {}
 
 type Message struct {
-	ID             string          `json:"id"`
-	Sender         *User           `json:"sender"`
-	Content        string          `json:"content"`
-	MessageType    MessageTypeEnum `json:"messageType"`
-	CreatedAt      time.Time       `json:"createdAt"`
-	EditedAt       *time.Time      `json:"editedAt,omitempty"`
-	ReplyToMessage *ReplyMessage   `json:"replyToMessage,omitempty"`
+	ID             string            `json:"id"`
+	Sender         *User             `json:"sender"`
+	Content        string            `json:"content"`
+	MessageType    MessageTypeEnum   `json:"messageType"`
+	Status         MessageStatusEnum `json:"status"`
+	ReplyToMessage *ReplyMessage     `json:"replyToMessage,omitempty"`
+	CreatedAt      time.Time         `json:"createdAt"`
+	EditedAt       *time.Time        `json:"editedAt,omitempty"`
+	DeliveredAt    *time.Time        `json:"deliveredAt,omitempty"`
+	ReadAt         *time.Time        `json:"readAt,omitempty"`
 }
 
 type MessageAddedSubscriptionInput struct {
-	UserID string `json:"userId"`
+	ConversationID string `json:"conversationId"`
 }
 
 type Mutation struct {
@@ -290,8 +293,10 @@ type Subscription struct {
 }
 
 type TypingEvent struct {
-	WritingBy string    `json:"writingBy"`
-	WritingAt time.Time `json:"writingAt"`
+	User           *User     `json:"user"`
+	IsTyping       bool      `json:"isTyping"`
+	ConversationID string    `json:"conversationId"`
+	Timestamp      time.Time `json:"timestamp"`
 }
 
 type UnauthorizedError struct {
@@ -389,6 +394,65 @@ func (e *ConversationTypeEnum) UnmarshalJSON(b []byte) error {
 }
 
 func (e ConversationTypeEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type MessageStatusEnum string
+
+const (
+	MessageStatusEnumSent      MessageStatusEnum = "SENT"
+	MessageStatusEnumDelivered MessageStatusEnum = "DELIVERED"
+	MessageStatusEnumRead      MessageStatusEnum = "READ"
+	MessageStatusEnumFailed    MessageStatusEnum = "FAILED"
+)
+
+var AllMessageStatusEnum = []MessageStatusEnum{
+	MessageStatusEnumSent,
+	MessageStatusEnumDelivered,
+	MessageStatusEnumRead,
+	MessageStatusEnumFailed,
+}
+
+func (e MessageStatusEnum) IsValid() bool {
+	switch e {
+	case MessageStatusEnumSent, MessageStatusEnumDelivered, MessageStatusEnumRead, MessageStatusEnumFailed:
+		return true
+	}
+	return false
+}
+
+func (e MessageStatusEnum) String() string {
+	return string(e)
+}
+
+func (e *MessageStatusEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MessageStatusEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MessageStatusEnum", str)
+	}
+	return nil
+}
+
+func (e MessageStatusEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *MessageStatusEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e MessageStatusEnum) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

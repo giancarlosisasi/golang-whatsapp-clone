@@ -17,10 +17,11 @@ INSERT INTO messages (
     sender_id,
     content,
     message_type,
-    reply_to_message_id
+    reply_to_message_id,
+    status
 ) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, conversation_id, sender_id, content, message_type, reply_to_message_id, media_url, media_filename, media_size, media_mime_type, location_latitude, location_longitude, location_address, is_deleted, created_at, edited_at, deleted_at
+    $1, $2, $3, $4, $5, $6
+) RETURNING id, conversation_id, sender_id, content, message_type, status, reply_to_message_id, media_url, media_filename, media_size, media_mime_type, location_latitude, location_longitude, location_address, is_deleted, created_at, edited_at, deleted_at, delivered_at, read_at
 `
 
 type CreateMessageParams struct {
@@ -29,6 +30,7 @@ type CreateMessageParams struct {
 	Content          string
 	MessageType      string
 	ReplyToMessageID pgtype.UUID
+	Status           string
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
@@ -38,6 +40,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		arg.Content,
 		arg.MessageType,
 		arg.ReplyToMessageID,
+		arg.Status,
 	)
 	var i Message
 	err := row.Scan(
@@ -46,6 +49,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		&i.SenderID,
 		&i.Content,
 		&i.MessageType,
+		&i.Status,
 		&i.ReplyToMessageID,
 		&i.MediaUrl,
 		&i.MediaFilename,
@@ -58,13 +62,15 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		&i.CreatedAt,
 		&i.EditedAt,
 		&i.DeletedAt,
+		&i.DeliveredAt,
+		&i.ReadAt,
 	)
 	return i, err
 }
 
 const getConversationMessages = `-- name: GetConversationMessages :many
 SELECT
-    m.id, m.conversation_id, m.sender_id, m.content, m.message_type, m.reply_to_message_id, m.media_url, m.media_filename, m.media_size, m.media_mime_type, m.location_latitude, m.location_longitude, m.location_address, m.is_deleted, m.created_at, m.edited_at, m.deleted_at,
+    m.id, m.conversation_id, m.sender_id, m.content, m.message_type, m.status, m.reply_to_message_id, m.media_url, m.media_filename, m.media_size, m.media_mime_type, m.location_latitude, m.location_longitude, m.location_address, m.is_deleted, m.created_at, m.edited_at, m.deleted_at, m.delivered_at, m.read_at,
     sender.id as sender_id,
     sender.name as sender_name,
     sender.email as sender_email,
@@ -96,6 +102,7 @@ type GetConversationMessagesRow struct {
 	SenderID          pgtype.UUID
 	Content           string
 	MessageType       string
+	Status            string
 	ReplyToMessageID  pgtype.UUID
 	MediaUrl          pgtype.Text
 	MediaFilename     pgtype.Text
@@ -108,6 +115,8 @@ type GetConversationMessagesRow struct {
 	CreatedAt         pgtype.Timestamptz
 	EditedAt          pgtype.Timestamptz
 	DeletedAt         pgtype.Timestamptz
+	DeliveredAt       pgtype.Timestamptz
+	ReadAt            pgtype.Timestamptz
 	SenderID_2        pgtype.UUID
 	SenderName        pgtype.Text
 	SenderEmail       string
@@ -135,6 +144,7 @@ func (q *Queries) GetConversationMessages(ctx context.Context, arg GetConversati
 			&i.SenderID,
 			&i.Content,
 			&i.MessageType,
+			&i.Status,
 			&i.ReplyToMessageID,
 			&i.MediaUrl,
 			&i.MediaFilename,
@@ -147,6 +157,8 @@ func (q *Queries) GetConversationMessages(ctx context.Context, arg GetConversati
 			&i.CreatedAt,
 			&i.EditedAt,
 			&i.DeletedAt,
+			&i.DeliveredAt,
+			&i.ReadAt,
 			&i.SenderID_2,
 			&i.SenderName,
 			&i.SenderEmail,

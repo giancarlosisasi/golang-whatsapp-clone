@@ -37,6 +37,7 @@ type Message struct {
 	SenderID          pgtype.UUID
 	Content           string
 	MessageType       string
+	Status            string
 	ReplyToMessageID  pgtype.UUID
 	MediaUrl          pgtype.Text
 	MediaFilename     pgtype.Text
@@ -49,6 +50,8 @@ type Message struct {
 	CreatedAt         pgtype.Timestamptz
 	EditedAt          pgtype.Timestamptz
 	DeletedAt         pgtype.Timestamptz
+	DeliveredAt       pgtype.Timestamptz
+	ReadAt            pgtype.Timestamptz
 }
 
 type User struct {
