@@ -16,10 +16,6 @@ var oauthStateCookieName = "whatsappgio_oauth_state"
 var oauthClientTypeCookieName = "whatsappgio_oauth_client_type"
 
 func (h *Handler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
-	// make sure to clear any previous invalid cookie
-	// h.clearStateCookies(c)
-
-	// log.Printf("Original URL: %s\n", c.OriginalURL())
 
 	// Get client type (web or mobile)
 	queryParams := r.URL.Query()
@@ -28,7 +24,9 @@ func (h *Handler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if clientType == "" {
 		clientType = "web"
 	}
-	// log.Printf("Client type: %s --\n", clientType)
+
+	h.logger.Info().Msgf("Initializing oauth google flow from url: %s", r.URL.String())
+	h.logger.Info().Msgf(">> Client type is: %s", clientType)
 
 	state := ""
 	// generate auth url and state
@@ -64,6 +62,8 @@ func (h *Handler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// log.Printf("AuthURL: %s\n", authURL)
 
+	h.logger.Info().Msgf(">> State is: %s", state)
+
 	// store state and client type in cookies for validation
 	h.setStateCookies(w, r, state, clientType)
 
@@ -73,7 +73,7 @@ func (h *Handler) GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	// log.Printf("Original URL: %s\n", r.URL.String())
+	h.logger.Info().Msgf("Callback run with url: %s", r.URL.String())
 
 	queryParams := r.URL.Query()
 
@@ -92,7 +92,7 @@ func (h *Handler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) 
 		clientType = clientTypeCookie.Value
 	}
 
-	log.Printf("client type: %s and stored stated: %s and state: %s", clientType, storedState, state)
+	h.logger.Info().Msgf(">>> Callback - client type is %s and state is %s", clientType, state)
 
 	if state == "" || state != storedState {
 		log.Printf("state: %s and storedState: %s\n", state, storedState)
@@ -294,12 +294,18 @@ func (h *Handler) clearStateCookies(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleAuthSuccess(
 	w http.ResponseWriter, r *http.Request,
 	jwtToken string, clientType string) {
+
+	h.logger.Info().Msgf("Handle success with client type: %s", clientType)
+
 	if clientType == "mobile" {
+		h.logger.Info().Msg("Redirecting to mobile schema after successfully google oauth login...")
 		// redirect to mobile app with token
 		redirectURL := fmt.Sprintf("%sauth/%s/", h.appConfig.MobileAppSchema, jwtToken)
 		// return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
 		http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 	}
+
+	h.logger.Info().Msg("Redirecting to web url after successfully google oauth login...")
 
 	isSecure := h.appConfig.AppEnv == "production"
 	cookie := &http.Cookie{
