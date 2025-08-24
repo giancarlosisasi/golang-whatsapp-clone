@@ -131,6 +131,20 @@ type ComplexityRoot struct {
 		Status         func(childComplexity int) int
 	}
 
+	MessageAddedEvent struct {
+		Content          func(childComplexity int) int
+		ID               func(childComplexity int) int
+		MessageType      func(childComplexity int) int
+		ReplyToMessageID func(childComplexity int) int
+		SenderUserID     func(childComplexity int) int
+	}
+
+	MessageStatusUpdatedEvent struct {
+		ConversationID func(childComplexity int) int
+		MessageID      func(childComplexity int) int
+		Status         func(childComplexity int) int
+	}
+
 	Mutation struct {
 		EditMessage             func(childComplexity int, input model.EditMessageInput) int
 		Example                 func(childComplexity int) int
@@ -179,11 +193,12 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		ConversationUpdated func(childComplexity int, input model.ConversationUpdatedSubscriptionInput) int
-		CurrentTime         func(childComplexity int) int
-		Example             func(childComplexity int) int
-		MessageAdded        func(childComplexity int, input model.MessageAddedSubscriptionInput) int
-		UserTyping          func(childComplexity int, input model.UserTypingSubscriptionInput) int
+		ConversationUpdated  func(childComplexity int, input model.ConversationUpdatedSubscriptionInput) int
+		CurrentTime          func(childComplexity int) int
+		Example              func(childComplexity int) int
+		MessageAdded         func(childComplexity int, input model.MessageAddedSubscriptionInput) int
+		MessageStatusUpdated func(childComplexity int, input model.MessageStatusUpdatedSubscriptionInput) int
+		UserTyping           func(childComplexity int, input model.UserTypingSubscriptionInput) int
 	}
 
 	TypingEvent struct {
@@ -236,7 +251,8 @@ type QueryResolver interface {
 type SubscriptionResolver interface {
 	Example(ctx context.Context) (<-chan *string, error)
 	CurrentTime(ctx context.Context) (<-chan *model.AppTime, error)
-	MessageAdded(ctx context.Context, input model.MessageAddedSubscriptionInput) (<-chan *model.Message, error)
+	MessageAdded(ctx context.Context, input model.MessageAddedSubscriptionInput) (<-chan *model.MessageAddedEvent, error)
+	MessageStatusUpdated(ctx context.Context, input model.MessageStatusUpdatedSubscriptionInput) (<-chan *model.MessageStatusUpdatedEvent, error)
 	ConversationUpdated(ctx context.Context, input model.ConversationUpdatedSubscriptionInput) (<-chan model.ConversationListItem, error)
 	UserTyping(ctx context.Context, input model.UserTypingSubscriptionInput) (<-chan *model.TypingEvent, error)
 }
@@ -582,6 +598,62 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Message.Status(childComplexity), true
 
+	case "MessageAddedEvent.content":
+		if e.complexity.MessageAddedEvent.Content == nil {
+			break
+		}
+
+		return e.complexity.MessageAddedEvent.Content(childComplexity), true
+
+	case "MessageAddedEvent.id":
+		if e.complexity.MessageAddedEvent.ID == nil {
+			break
+		}
+
+		return e.complexity.MessageAddedEvent.ID(childComplexity), true
+
+	case "MessageAddedEvent.messageType":
+		if e.complexity.MessageAddedEvent.MessageType == nil {
+			break
+		}
+
+		return e.complexity.MessageAddedEvent.MessageType(childComplexity), true
+
+	case "MessageAddedEvent.replyToMessageId":
+		if e.complexity.MessageAddedEvent.ReplyToMessageID == nil {
+			break
+		}
+
+		return e.complexity.MessageAddedEvent.ReplyToMessageID(childComplexity), true
+
+	case "MessageAddedEvent.senderUserId":
+		if e.complexity.MessageAddedEvent.SenderUserID == nil {
+			break
+		}
+
+		return e.complexity.MessageAddedEvent.SenderUserID(childComplexity), true
+
+	case "MessageStatusUpdatedEvent.conversationId":
+		if e.complexity.MessageStatusUpdatedEvent.ConversationID == nil {
+			break
+		}
+
+		return e.complexity.MessageStatusUpdatedEvent.ConversationID(childComplexity), true
+
+	case "MessageStatusUpdatedEvent.messageId":
+		if e.complexity.MessageStatusUpdatedEvent.MessageID == nil {
+			break
+		}
+
+		return e.complexity.MessageStatusUpdatedEvent.MessageID(childComplexity), true
+
+	case "MessageStatusUpdatedEvent.status":
+		if e.complexity.MessageStatusUpdatedEvent.Status == nil {
+			break
+		}
+
+		return e.complexity.MessageStatusUpdatedEvent.Status(childComplexity), true
+
 	case "Mutation.editMessage":
 		if e.complexity.Mutation.EditMessage == nil {
 			break
@@ -811,6 +883,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Subscription.MessageAdded(childComplexity, args["input"].(model.MessageAddedSubscriptionInput)), true
 
+	case "Subscription.messageStatusUpdated":
+		if e.complexity.Subscription.MessageStatusUpdated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_messageStatusUpdated_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.MessageStatusUpdated(childComplexity, args["input"].(model.MessageStatusUpdatedSubscriptionInput)), true
+
 	case "Subscription.userTyping":
 		if e.complexity.Subscription.UserTyping == nil {
 			break
@@ -935,6 +1019,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGetOrCreateDirectConversationInput,
 		ec.unmarshalInputMarkConversationAsReadInput,
 		ec.unmarshalInputMessageAddedSubscriptionInput,
+		ec.unmarshalInputMessageStatusUpdatedSubscriptionInput,
 		ec.unmarshalInputPagination,
 		ec.unmarshalInputSendMessageInput,
 		ec.unmarshalInputStartDirectConversationInput,
@@ -1168,6 +1253,17 @@ func (ec *executionContext) field_Subscription_messageAdded_args(ctx context.Con
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNMessageAddedSubscriptionInput2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedSubscriptionInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_messageStatusUpdated_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNMessageStatusUpdatedSubscriptionInput2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusUpdatedSubscriptionInput)
 	if err != nil {
 		return nil, err
 	}
@@ -3374,6 +3470,355 @@ func (ec *executionContext) fieldContext_Message_readAt(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _MessageAddedEvent_id(ctx context.Context, field graphql.CollectedField, obj *model.MessageAddedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageAddedEvent_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageAddedEvent_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageAddedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageAddedEvent_senderUserId(ctx context.Context, field graphql.CollectedField, obj *model.MessageAddedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageAddedEvent_senderUserId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SenderUserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageAddedEvent_senderUserId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageAddedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageAddedEvent_content(ctx context.Context, field graphql.CollectedField, obj *model.MessageAddedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageAddedEvent_content(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageAddedEvent_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageAddedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageAddedEvent_replyToMessageId(ctx context.Context, field graphql.CollectedField, obj *model.MessageAddedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageAddedEvent_replyToMessageId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReplyToMessageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageAddedEvent_replyToMessageId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageAddedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageAddedEvent_messageType(ctx context.Context, field graphql.CollectedField, obj *model.MessageAddedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageAddedEvent_messageType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.MessageTypeEnum)
+	fc.Result = res
+	return ec.marshalNMessageTypeEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageTypeEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageAddedEvent_messageType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageAddedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageTypeEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageStatusUpdatedEvent_conversationId(ctx context.Context, field graphql.CollectedField, obj *model.MessageStatusUpdatedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageStatusUpdatedEvent_conversationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ConversationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageStatusUpdatedEvent_conversationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageStatusUpdatedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageStatusUpdatedEvent_messageId(ctx context.Context, field graphql.CollectedField, obj *model.MessageStatusUpdatedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageStatusUpdatedEvent_messageId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageStatusUpdatedEvent_messageId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageStatusUpdatedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MessageStatusUpdatedEvent_status(ctx context.Context, field graphql.CollectedField, obj *model.MessageStatusUpdatedEvent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageStatusUpdatedEvent_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.MessageStatusEnum)
+	fc.Result = res
+	return ec.marshalNMessageStatusEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusEnum(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MessageStatusUpdatedEvent_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MessageStatusUpdatedEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MessageStatusEnum does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_example(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_example(ctx, field)
 	if err != nil {
@@ -4751,7 +5196,7 @@ func (ec *executionContext) _Subscription_messageAdded(ctx context.Context, fiel
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *model.Message):
+		case res, ok := <-resTmp.(<-chan *model.MessageAddedEvent):
 			if !ok {
 				return nil
 			}
@@ -4759,7 +5204,7 @@ func (ec *executionContext) _Subscription_messageAdded(ctx context.Context, fiel
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNMessageAddedEvent2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedEvent(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -4777,27 +5222,17 @@ func (ec *executionContext) fieldContext_Subscription_messageAdded(ctx context.C
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Message_id(ctx, field)
-			case "sender":
-				return ec.fieldContext_Message_sender(ctx, field)
+				return ec.fieldContext_MessageAddedEvent_id(ctx, field)
+			case "senderUserId":
+				return ec.fieldContext_MessageAddedEvent_senderUserId(ctx, field)
 			case "content":
-				return ec.fieldContext_Message_content(ctx, field)
+				return ec.fieldContext_MessageAddedEvent_content(ctx, field)
+			case "replyToMessageId":
+				return ec.fieldContext_MessageAddedEvent_replyToMessageId(ctx, field)
 			case "messageType":
-				return ec.fieldContext_Message_messageType(ctx, field)
-			case "status":
-				return ec.fieldContext_Message_status(ctx, field)
-			case "replyToMessage":
-				return ec.fieldContext_Message_replyToMessage(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Message_createdAt(ctx, field)
-			case "editedAt":
-				return ec.fieldContext_Message_editedAt(ctx, field)
-			case "deliveredAt":
-				return ec.fieldContext_Message_deliveredAt(ctx, field)
-			case "readAt":
-				return ec.fieldContext_Message_readAt(ctx, field)
+				return ec.fieldContext_MessageAddedEvent_messageType(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MessageAddedEvent", field.Name)
 		},
 	}
 	defer func() {
@@ -4808,6 +5243,83 @@ func (ec *executionContext) fieldContext_Subscription_messageAdded(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Subscription_messageAdded_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_messageStatusUpdated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_messageStatusUpdated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().MessageStatusUpdated(rctx, fc.Args["input"].(model.MessageStatusUpdatedSubscriptionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.MessageStatusUpdatedEvent):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalNMessageStatusUpdatedEvent2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusUpdatedEvent(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_messageStatusUpdated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "conversationId":
+				return ec.fieldContext_MessageStatusUpdatedEvent_conversationId(ctx, field)
+			case "messageId":
+				return ec.fieldContext_MessageStatusUpdatedEvent_messageId(ctx, field)
+			case "status":
+				return ec.fieldContext_MessageStatusUpdatedEvent_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageStatusUpdatedEvent", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Subscription_messageStatusUpdated_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7713,6 +8225,33 @@ func (ec *executionContext) unmarshalInputMessageAddedSubscriptionInput(ctx cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMessageStatusUpdatedSubscriptionInput(ctx context.Context, obj any) (model.MessageStatusUpdatedSubscriptionInput, error) {
+	var it model.MessageStatusUpdatedSubscriptionInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"conversationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "conversationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conversationId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConversationID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPagination(ctx context.Context, obj any) (model.Pagination, error) {
 	var it model.Pagination
 	asMap := map[string]any{}
@@ -8877,6 +9416,111 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var messageAddedEventImplementors = []string{"MessageAddedEvent"}
+
+func (ec *executionContext) _MessageAddedEvent(ctx context.Context, sel ast.SelectionSet, obj *model.MessageAddedEvent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, messageAddedEventImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MessageAddedEvent")
+		case "id":
+			out.Values[i] = ec._MessageAddedEvent_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "senderUserId":
+			out.Values[i] = ec._MessageAddedEvent_senderUserId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "content":
+			out.Values[i] = ec._MessageAddedEvent_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "replyToMessageId":
+			out.Values[i] = ec._MessageAddedEvent_replyToMessageId(ctx, field, obj)
+		case "messageType":
+			out.Values[i] = ec._MessageAddedEvent_messageType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var messageStatusUpdatedEventImplementors = []string{"MessageStatusUpdatedEvent"}
+
+func (ec *executionContext) _MessageStatusUpdatedEvent(ctx context.Context, sel ast.SelectionSet, obj *model.MessageStatusUpdatedEvent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, messageStatusUpdatedEventImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MessageStatusUpdatedEvent")
+		case "conversationId":
+			out.Values[i] = ec._MessageStatusUpdatedEvent_conversationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "messageId":
+			out.Values[i] = ec._MessageStatusUpdatedEvent_messageId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._MessageStatusUpdatedEvent_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -9393,6 +10037,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_currentTime(ctx, fields[0])
 	case "messageAdded":
 		return ec._Subscription_messageAdded(ctx, fields[0])
+	case "messageStatusUpdated":
+		return ec._Subscription_messageStatusUpdated(ctx, fields[0])
 	case "conversationUpdated":
 		return ec._Subscription_conversationUpdated(ctx, fields[0])
 	case "userTyping":
@@ -10138,10 +10784,6 @@ func (ec *executionContext) marshalNMarkConversationAsReadResult2golangᚑwhatsa
 	return ec._MarkConversationAsReadResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMessage2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessage(ctx context.Context, sel ast.SelectionSet, v model.Message) graphql.Marshaler {
-	return ec._Message(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNMessage2ᚕᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Message) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -10196,6 +10838,20 @@ func (ec *executionContext) marshalNMessage2ᚖgolangᚑwhatsappᚑcloneᚋgraph
 	return ec._Message(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMessageAddedEvent2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedEvent(ctx context.Context, sel ast.SelectionSet, v model.MessageAddedEvent) graphql.Marshaler {
+	return ec._MessageAddedEvent(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMessageAddedEvent2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedEvent(ctx context.Context, sel ast.SelectionSet, v *model.MessageAddedEvent) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MessageAddedEvent(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNMessageAddedSubscriptionInput2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageAddedSubscriptionInput(ctx context.Context, v any) (model.MessageAddedSubscriptionInput, error) {
 	res, err := ec.unmarshalInputMessageAddedSubscriptionInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10209,6 +10865,25 @@ func (ec *executionContext) unmarshalNMessageStatusEnum2golangᚑwhatsappᚑclon
 
 func (ec *executionContext) marshalNMessageStatusEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusEnum(ctx context.Context, sel ast.SelectionSet, v model.MessageStatusEnum) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNMessageStatusUpdatedEvent2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusUpdatedEvent(ctx context.Context, sel ast.SelectionSet, v model.MessageStatusUpdatedEvent) graphql.Marshaler {
+	return ec._MessageStatusUpdatedEvent(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMessageStatusUpdatedEvent2ᚖgolangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusUpdatedEvent(ctx context.Context, sel ast.SelectionSet, v *model.MessageStatusUpdatedEvent) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MessageStatusUpdatedEvent(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMessageStatusUpdatedSubscriptionInput2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageStatusUpdatedSubscriptionInput(ctx context.Context, v any) (model.MessageStatusUpdatedSubscriptionInput, error) {
+	res, err := ec.unmarshalInputMessageStatusUpdatedSubscriptionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNMessageTypeEnum2golangᚑwhatsappᚑcloneᚋgraphᚋmodelᚐMessageTypeEnum(ctx context.Context, v any) (model.MessageTypeEnum, error) {

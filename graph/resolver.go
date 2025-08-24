@@ -7,6 +7,7 @@ import (
 	db "golang-whatsapp-clone/database/gen"
 	"golang-whatsapp-clone/graph/model"
 	"golang-whatsapp-clone/service"
+	"golang-whatsapp-clone/subscriptions"
 
 	"github.com/rs/zerolog"
 )
@@ -23,6 +24,7 @@ type Resolver struct {
 	Logger              *zerolog.Logger
 	ConversationService *service.ConversationService
 	MessageService      *service.MessageService
+	SubscriptionManager *subscriptions.SubscriptionManager
 }
 
 func (r *Resolver) mustGetAuthenticatedUser(ctx context.Context) (*auth.UserContext, *model.UnauthorizedError) {

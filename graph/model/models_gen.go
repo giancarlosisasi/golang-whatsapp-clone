@@ -182,7 +182,25 @@ type Message struct {
 	ReadAt         *time.Time        `json:"readAt,omitempty"`
 }
 
+type MessageAddedEvent struct {
+	ID               string          `json:"id"`
+	SenderUserID     string          `json:"senderUserId"`
+	Content          string          `json:"content"`
+	ReplyToMessageID *string         `json:"replyToMessageId,omitempty"`
+	MessageType      MessageTypeEnum `json:"messageType"`
+}
+
 type MessageAddedSubscriptionInput struct {
+	ConversationID string `json:"conversationId"`
+}
+
+type MessageStatusUpdatedEvent struct {
+	ConversationID string            `json:"conversationId"`
+	MessageID      string            `json:"messageId"`
+	Status         MessageStatusEnum `json:"status"`
+}
+
+type MessageStatusUpdatedSubscriptionInput struct {
 	ConversationID string `json:"conversationId"`
 }
 

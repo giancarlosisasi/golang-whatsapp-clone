@@ -50,12 +50,12 @@ func (r *conversationListItemGroupResolver) LastMessage(ctx context.Context, obj
 
 // SendMessage is the resolver for the sendMessage field.
 func (r *mutationResolver) SendMessage(ctx context.Context, input model.SendMessageInput) (model.SendMessageResult, error) {
-	_, graphqlError := r.mustGetAuthenticatedUser(ctx)
+	user, graphqlError := r.mustGetAuthenticatedUser(ctx)
 	if graphqlError != nil {
 		return graphqlError, nil
 	}
 
-	_, err := r.MessageService.CreateMessage(
+	message, err := r.MessageService.CreateMessage(
 		ctx,
 		input.ConversationID,
 		input.SenderID,
@@ -70,6 +70,20 @@ func (r *mutationResolver) SendMessage(ctx context.Context, input model.SendMess
 			Code:         customerrors.CodeInternalError,
 		}, nil
 	}
+
+	// convert to graphql type
+	replyId := message.ReplyToMessageID.String()
+
+	m := &model.MessageAddedEvent{
+		ID:               message.ID.String(),
+		SenderUserID:     user.UserID,
+		Content:          message.Content,
+		ReplyToMessageID: &replyId,
+		MessageType:      model.MessageTypeEnum(message.MessageType),
+	}
+
+	// 🚀 BROADCAST the message to all subscribers!
+	r.SubscriptionManager.BroadcastMessage(input.ConversationID, m)
 
 	return &model.SendMessageSuccess{Success: true}, nil
 }
@@ -246,8 +260,36 @@ func (r *queryResolver) GetOrCreateDirectConversation(ctx context.Context, input
 }
 
 // MessageAdded is the resolver for the messageAdded field.
-func (r *subscriptionResolver) MessageAdded(ctx context.Context, input model.MessageAddedSubscriptionInput) (<-chan *model.Message, error) {
-	panic(fmt.Errorf("not implemented: MessageAdded - messageAdded"))
+func (r *subscriptionResolver) MessageAdded(ctx context.Context, input model.MessageAddedSubscriptionInput) (<-chan *model.MessageAddedEvent, error) {
+	_, graphqlError := r.mustGetAuthenticatedUser(ctx)
+	if graphqlError != nil {
+		return nil, errors.New(graphqlError.ErrorMessage)
+	}
+
+	// TODO:
+	// - Validate if the current user is in this conversation (in the conversation_participant queries we have an GetParticipantByUserAndConversation)
+
+	msgChannel := r.SubscriptionManager.SubscribeToMessages(input.ConversationID)
+
+	// clean up when the client disconnects
+	// graphql will automatically close the connection when client disconnect
+	// but still we should clean up our subscription manager
+	go func() {
+		// wait for context cancellation
+		<-ctx.Done()
+		r.SubscriptionManager.Unsubscribe(input.ConversationID, msgChannel)
+
+		r.Logger.Info().Msgf("Client disconnected from conversation %s subscription\n", input.ConversationID)
+	}()
+
+	r.Logger.Info().Msgf("New Graphql subscription created for conversation %s\n", input.ConversationID)
+
+	return msgChannel, nil
+}
+
+// MessageStatusUpdated is the resolver for the messageStatusUpdated field.
+func (r *subscriptionResolver) MessageStatusUpdated(ctx context.Context, input model.MessageStatusUpdatedSubscriptionInput) (<-chan *model.MessageStatusUpdatedEvent, error) {
+	panic(fmt.Errorf("not implemented: MessageStatusUpdated - messageStatusUpdated"))
 }
 
 // ConversationUpdated is the resolver for the conversationUpdated field.

@@ -206,9 +206,17 @@ input MessageStatusUpdatedSubscriptionInput {
   conversationId: ID!
 }
 
+type MessageAddedEvent {
+  id: ID!
+  senderUserId: ID!
+  content: String!
+  replyToMessageId: ID
+  messageType: MessageTypeEnum!
+}
+
 extend type Subscription {
   # Listen for new messages in user's conversations
-  messageAdded(input: MessageAddedSubscriptionInput!): Message!
+  messageAdded(input: MessageAddedSubscriptionInput!): MessageAddedEvent!
   messageStatusUpdated(input: MessageStatusUpdatedSubscriptionInput!): MessageStatusUpdatedEvent!
   # Listen for conversation updated (last message, unread counts, etc)
   conversationUpdated(input: ConversationUpdatedSubscriptionInput!): ConversationListItem!

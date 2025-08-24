@@ -11,6 +11,7 @@ import (
 	"golang-whatsapp-clone/logger"
 	"golang-whatsapp-clone/repository"
 	"golang-whatsapp-clone/service"
+	"golang-whatsapp-clone/subscriptions"
 	"io"
 	"net/http"
 	"time"
@@ -46,6 +47,9 @@ func NewServer() (*App, *http.Server, http.Handler) {
 	oauthService := auth.NewOAuthService(appConfig, jwtService)
 	conversationService := service.NewConversationService(conversationRepository, participantRepository)
 	messageService := service.NewMessageService(messageRepository)
+
+	// subscriptions
+	subscriptionManager := subscriptions.NewSubscriptionManager()
 
 	handlers := handler.NewHandler(
 		log,
@@ -85,6 +89,7 @@ func NewServer() (*App, *http.Server, http.Handler) {
 		Logger:              log,
 		ConversationService: conversationService,
 		MessageService:      messageService,
+		SubscriptionManager: subscriptionManager,
 	}
 	graphqlHandler := handler.NewGraphqlHandler(log, gqlResolver)
 	graphqlPlaygroundHandler := handler.NewGraphqlPlaygroundHandler()
