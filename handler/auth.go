@@ -303,6 +303,7 @@ func (h *Handler) handleAuthSuccess(
 		redirectURL := fmt.Sprintf("%sauth/%s/", h.appConfig.MobileAppSchema, jwtToken)
 		// return c.Redirect(redirectURL, fiber.StatusTemporaryRedirect)
 		http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
+		return
 	}
 
 	h.logger.Info().Msg("Redirecting to web url after successfully google oauth login...")
